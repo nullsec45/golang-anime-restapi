@@ -1,0 +1,5 @@
+CREATE TABLE genres (
+  id    BIGSERIAL PRIMARY KEY,
+  slug  TEXT NOT NULL UNIQUE,
+  name  TEXT NOT NULL UNIQUE
+);
