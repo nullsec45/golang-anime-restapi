@@ -1,0 +1,2 @@
+ALTER TABLE animes
+  DROP COLUMN IF EXISTS deleted_at;
