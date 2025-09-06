@@ -5,9 +5,18 @@ import (
 	"database/sql"
 	"encoding/json"
 	"time"
+	// "fmt"
+	// "strings"
 )
 
-func toSeasonPtr(s *string) *dto.Season {
+func ToString(ns sql.NullString) string {
+    if ns.Valid {
+        return ns.String
+    }
+    return ""
+}
+
+func ToSeasonPtr(s *string) *dto.Season {
 	if s == nil {
 		return nil
 	}
@@ -15,7 +24,7 @@ func toSeasonPtr(s *string) *dto.Season {
 	return &v
 }
 
-func toAgeRatingPtr(s *string) *dto.AgeRating {
+func ToAgeRatingPtr(s *string) *dto.AgeRating {
 	if s == nil {
 		return nil
 	}
@@ -23,22 +32,127 @@ func toAgeRatingPtr(s *string) *dto.AgeRating {
 	return &v
 }
 
-func toJSONMap[T any](v T) map[string]any {
-	switch x := any(v).(type) {
-	case nil:
-		return map[string]any{}
-	case map[string]any:
+func ToRawMessage(v any) json.RawMessage {
+	if v == nil {
+		return json.RawMessage(`{}`)
+	}
+	switch x := v.(type) {
+	case json.RawMessage:
+		if len(x) == 0 {
+			return json.RawMessage(`{}`)
+		}
 		return x
 	case []byte:
-		var m map[string]any
-		_ = json.Unmarshal(x, &m)
-		return m
-	case json.RawMessage:
-		var m map[string]any
-		_ = json.Unmarshal(x, &m)
-		return m
+		if len(x) == 0 {
+			return json.RawMessage(`{}`)
+		}
+		return json.RawMessage(x)
+	case string:
+		if x == "" {
+			return json.RawMessage(`{}`)
+		}
+		if json.Valid([]byte(x)) {
+			return json.RawMessage(x)
+		}
+		b, _ := json.Marshal(x)
+		return json.RawMessage(b)
+	case map[string]any:
+		b, _ := json.Marshal(x)
+		return json.RawMessage(b)
 	default:
-		return map[string]any{}
+		b, _ := json.Marshal(x)
+		return json.RawMessage(b)
+	}
+}
+
+func ToTimePtr(nt sql.NullTime) time.Time {
+	if nt.Valid {
+		return nt.Time
+	}
+	return  time.Time{}
+}
+
+func ToAnimeType(v any) dto.AnimeType {
+	switch x := v.(type) {
+	case dto.AnimeType:
+		return x
+	case *dto.AnimeType:
+		if x == nil {
+			return ""
+		}
+		return *x
+	case string:
+		return dto.AnimeType(x)
+	case *string:
+		if x == nil {
+			return ""
+		}
+		return dto.AnimeType(*x)
+	default:
+		return ""
+	}
+}
+
+func ToAnimeStatus(v any) dto.AnimeStatus {
+	switch x := v.(type) {
+	case dto.AnimeStatus:
+		return x
+	case *dto.AnimeStatus:
+		if x == nil { return "" }
+		return *x
+	case string:
+		return dto.AnimeStatus(x)
+	case *string:
+		if x == nil { return "" }
+		return dto.AnimeStatus(*x)
+	default:
+		return ""
+	}
+}
+
+func ToSeason(v any) *dto.Season {
+	switch x := v.(type) {
+	case nil:
+		return nil
+	case dto.Season:
+		s := x
+		return &s
+	case *dto.Season:
+		return x
+	case string:
+		s := dto.Season(x)
+		return &s
+	case *string:
+		if x == nil {
+			return nil
+		}
+		s := dto.Season(*x)
+		return &s
+	default:
+		return nil
+	}
+}
+
+func ToAgeRating(v any) *dto.AgeRating {
+	switch x := v.(type) {
+	case nil:
+		return nil
+	case dto.AgeRating:
+		s := x
+		return &s
+	case *dto.AgeRating:
+		return x
+	case string:
+		s := dto.AgeRating(x)
+		return &s
+	case *string:
+		if x == nil {
+			return nil
+		}
+		s := dto.AgeRating(*x)
+		return &s
+	default:
+		return nil
 	}
 }
 
@@ -51,12 +165,20 @@ func nstr(p *string) sql.NullString {
 }
 
 // *int -> sql.NullInt32
-func nint(p *int) sql.NullInt32 {
-	if p == nil {
-		return sql.NullInt32{}
-	}
-	return sql.NullInt32{Int32: int32(*p), Valid: true}
-}
+// func IntPtrFromNullInt32(n sql.NullInt32) *int {
+// 	if n.Valid {
+// 		v := int(n.Int32)
+// 		return &v
+// 	}
+// 	return nil
+// }
+
+// func ToSqlInt32(p *int) sql.NullInt32 {
+// 	if p == nil {
+// 		return sql.NullInt32{}
+// 	}
+// 	return sql.NullInt32{Int32: int32(*p), Valid: true}
+// }
 
 // *int16 -> sql.NullInt16
 func nint16(p *int16) sql.NullInt16 {
@@ -67,11 +189,11 @@ func nint16(p *int16) sql.NullInt16 {
 }
 
 // *time.Time -> sql.NullTime
-func ntime(p *time.Time) sql.NullTime {
-	if p == nil {
+func ToSqlNullTime(t time.Time) sql.NullTime {
+	if t.IsZero() {
 		return sql.NullTime{}
 	}
-	return sql.NullTime{Time: *p, Valid: true}
+	return sql.NullTime{Time: t, Valid: true}
 }
 
 // *float32 -> sql.NullFloat64 (cast ke float64)
@@ -83,7 +205,7 @@ func nfloat32(p *float32) sql.NullFloat64 {
 }
 
 // map[string]any -> json.RawMessage (untuk JSONB)
-func njson(m map[string]any) json.RawMessage {
+func ToJson(m map[string]any) json.RawMessage {
 	if len(m) == 0 {
 		return nil
 	}
@@ -92,7 +214,7 @@ func njson(m map[string]any) json.RawMessage {
 }
 
 // enum pointer -> *string
-func seasonToString(s *dto.Season) *string {
+func SeasonToString(s *dto.Season) *string {
 	if s == nil {
 		return nil
 	}
@@ -100,7 +222,7 @@ func seasonToString(s *dto.Season) *string {
 	return &v
 }
 
-func ageToString(a *dto.AgeRating) *string {
+func AgeToString(a *dto.AgeRating) *string {
 	if a == nil {
 		return nil
 	}
@@ -109,7 +231,7 @@ func ageToString(a *dto.AgeRating) *string {
 }
 
 // utilities kecil
-func firstNonEmpty(vals ...string) string {
+func FirstNonEmpty(vals ...string) string {
 	for _, v := range vals {
 		if v != "" {
 			return v
@@ -117,13 +239,13 @@ func firstNonEmpty(vals ...string) string {
 	}
 	return ""
 }
-func ptrToString(p *string) string {
+func PtrToString(p *string) string {
 	if p == nil {
 		return ""
 	}
 	return *p
 }
-func ptrToInt(p *int) int {
+func PtrToInt(p *int) int {
 	if p == nil {
 		return 0
 	}

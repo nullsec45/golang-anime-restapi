@@ -9,6 +9,7 @@ import(
 	"database/sql"
 	"time"
 	"errors"
+	// "encoding/json"
 )
 
 type AnimeService struct {
@@ -35,31 +36,33 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 			Id:                     v.Id,
 			Slug:                   v.Slug,
 			TitleRomaji:            v.TitleRomaji,
-			TitleNative:            v.TitleNative,         
-			TitleEnglish:           v.TitleEnglish,        
-			Synopsis:               v.Synopsis,            	
+			TitleNative:            utility.ToString(v.TitleNative),         
+			TitleEnglish:           utility.ToString(v.TitleEnglish),        
+			Synopsis:               utility.ToString(v.Synopsis),            	
 			Type:                   dto.AnimeType(v.Type),
-			Season:                 utility.toSeasonPtr(v.Season),
+			Season:                 v.Season,
 			SeasonYear:             v.SeasonYear,         
 			Status:                 dto.AnimeStatus(v.Status), 
-			AgeRating:              utility.toAgeRatingPtr(v.AgeRating),
+			AgeRating:              v.AgeRating,
 			TotalEpisodes:          v.TotalEpisodes,            
 			AverageDurationMinutes: v.AverageDurationMinutes,   
 			Country:                v.Country,
-			PremieredAt:            v.PremieredAt,              
-			EndedAt:                v.EndedAt,                  
+			PremieredAt:            utility.ToTimePtr(v.PremieredAt),              
+			EndedAt:                utility.ToTimePtr(v.EndedAt),                  
 			Popularity:             v.Popularity,
 			ScoreAvg:               v.ScoreAvg,                 
-			AltTitles:              utility.toJSONMap(v.AltTitles),     
-			ExternalIDs:            utility.toJSONMap(v.ExternalIDs),       
+			AltTitles:              utility.ToRawMessage(v.AltTitles),     
+			ExternalIDs:            utility.ToRawMessage(v.ExternalIDs),       
 		})
 	}
+
+	return animeData, nil
 }
 
 func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeData, error) {
-    exist, err := c.customerRepository.FindById(ctx,id)
+    exist, err := as.animeRepository.FindById(ctx,id)
 
-    if err != nil && exist.ID == "" {
+    if err != nil && exist.Id == "" {
         return dto.AnimeData{}, errors.New("Data anime tidak ditemukan!.")
     }
     
@@ -68,26 +71,26 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeData, err
     }
 
     return dto.AnimeData{
-      		Id:                     v.Id,
-			Slug:                   v.Slug,
-			TitleRomaji:            v.TitleRomaji,
-			TitleNative:            v.TitleNative,         
-			TitleEnglish:           v.TitleEnglish,        
-			Synopsis:               v.Synopsis,            	
-			Type:                   dto.AnimeType(v.Type),
-			Season:                 utility.toSeasonPtr(v.Season),
-			SeasonYear:             v.SeasonYear,         
-			Status:                 dto.AnimeStatus(v.Status), 
-			AgeRating:              utility.toAgeRatingPtr(v.AgeRating),
-			TotalEpisodes:          v.TotalEpisodes,            
-			AverageDurationMinutes: v.AverageDurationMinutes,   
-			Country:                v.Country,
-			PremieredAt:            v.PremieredAt,              
-			EndedAt:                v.EndedAt,                  
-			Popularity:             v.Popularity,
-			ScoreAvg:               v.ScoreAvg,                 
-			AltTitles:              utility.toJSONMap(v.AltTitles),     
-			ExternalIDs:            utility.toJSONMap(v.ExternalIDs),   
+      		Id:                     exist.Id,
+			Slug:                   exist.Slug,
+			TitleRomaji:            exist.TitleRomaji,
+			TitleNative:            utility.ToString(exist.TitleNative),         
+			TitleEnglish:           utility.ToString(exist.TitleEnglish),        
+			Synopsis:               utility.ToString(exist.Synopsis),            	
+			Type:                   dto.AnimeType(exist.Type),
+			Season:                 exist.Season,
+			SeasonYear:             exist.SeasonYear,         
+			Status:                 dto.AnimeStatus(exist.Status), 
+			AgeRating:              exist.AgeRating,
+			TotalEpisodes:          exist.TotalEpisodes,            
+			AverageDurationMinutes: exist.AverageDurationMinutes,   
+			Country:                exist.Country,
+			PremieredAt:            utility.ToTimePtr(exist.PremieredAt),              
+			EndedAt:                utility.ToTimePtr(exist.EndedAt),                  
+			Popularity:             exist.Popularity,
+			ScoreAvg:               exist.ScoreAvg,                 
+			AltTitles:              utility.ToRawMessage(exist.AltTitles),     
+			ExternalIDs:            utility.ToRawMessage(exist.ExternalIDs),   
     }, nil
 }
 
@@ -96,25 +99,25 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
         Id: uuid.New().String(),
 		Slug:req.Slug,
 		TitleRomaji: req.TitleRomaji,
-		TitleNative : utility.nstr(req.TitleNative),
-		TitleEnglish: utility.nstr(req.TitleEnglish),
-		Synopsis: utility.nstr(req.Synopsis),
-		Type: string(req.Type),  
-		Status: string(req.Status),
-		Season: utility.nstr(seasonToString(req.Season)),
-		SeasonYear: nint16(req.SeasonYear),
-		AgeRating: utility.nstr(ageToString(req.AgeRating)),
-		TotalEpisodes: utility.nint(req.TotalEpisodes),
-		AverageDurationMinutes: utility.nint(req.AverageDurationMinutes),
-		Country: sql.NullString{String: firstNonEmpty(ptrToString(req.Country), "JP"), Valid: true},
-		PremieredAt: utility.ntime(req.PremieredAt),
-		EndedAt: utility.ntime(req.EndedAt),
-		Popularity: sql.NullInt32{Int32: int32(ptrToInt(req.Popularity)), Valid: req.Popularity != nil},
-		ScoreAvg: utility.nfloat32(req.ScoreAvg),
-		AltTitles: utility.njson(req.AltTitles),
-		ExternalIDs: utility.njson(req.ExternalIDs),
-		CreatedAt: sql.NullTime{Time: now, Valid: true},
-		UpdatedAt: sql.NullTime{Time: now, Valid: true},
+		TitleNative : sql.NullString{String:req.TitleNative, Valid:true},
+		TitleEnglish: sql.NullString{String:req.TitleEnglish, Valid:true},
+		Synopsis: sql.NullString{String:req.Synopsis, Valid:true},
+		Type: utility.ToAnimeType(req.Type),  
+		Status: utility.ToAnimeStatus(req.Status),
+		Season: utility.ToSeason(req.Season),
+		SeasonYear: req.SeasonYear,
+		AgeRating: utility.ToAgeRating(req.AgeRating),
+		TotalEpisodes: req.TotalEpisodes,
+		AverageDurationMinutes: req.AverageDurationMinutes,
+		Country: req.Country,
+		PremieredAt: utility.ToSqlNullTime(req.PremieredAt),
+		EndedAt: utility.ToSqlNullTime(req.EndedAt),
+		Popularity: req.Popularity,
+		ScoreAvg: req.ScoreAvg,
+		AltTitles: utility.ToRawMessage(req.AltTitles),
+		ExternalIDs: utility.ToRawMessage(req.ExternalIDs),
+		CreatedAt: sql.NullTime{Time: time.Now(), Valid: true},
+		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
     }
 
 	return as.animeRepository.Save(ctx, &anime)
@@ -122,40 +125,40 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
 
 func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  error {
     // Cari data anime
-    exist, err := c.animeRepository.FindById(ctx, req.ID)
+    exist, err := as.animeRepository.FindById(ctx, req.Id)
     // fmt.Println(err)
 
     // Jika anime tidak ditemukan
     if err != nil && exist.Id == "" {
-        return nil, errors.New("Data anime tidak ditemukan!.")
+        return errors.New("Data anime tidak ditemukan!.")
     }
     
     if err != nil {
-        return nil, err
+        return  err
     }
 
     // Update data sesuai request
 	exist.Slug = req.Slug
 	exist.TitleRomaji = req.TitleRomaji
-	exist.TitleNative  = utility.nstr(req.TitleNative)
-	exist.TitleEnglish = utility.nstr(req.TitleEnglish)
-	exist.Synopsis = utility.nstr(req.Synopsis)
-	exist.Type = string(req.Type)  
-	exist.Status = string(req.Status)
-	exist.Season = utility.nstr(seasonToString(req.Season))
-	exist.SeasonYear = nint16(req.SeasonYear)
-	exist.AgeRating = utility.nstr(ageToString(req.AgeRating))
-	exist.TotalEpisodes = utility.nint(req.TotalEpisodes)
-	exist.AverageDurationMinutes = utility.nint(req.AverageDurationMinutes)
-	exist.Country =  sql.NullString{String: firstNonEmpty(ptrToString(req.Country), "JP"), Valid: true}
-	exist.PremieredAt = utility.ntime(req.PremieredAt)
-	exist.EndedAt =  utility.ntime(req.EndedAt)
-	exist.Popularity = sql.NullInt32{Int32: int32(ptrToInt(req.Popularity)), Valid: req.Popularity != nil}
-	exist.ScoreAvg = utility.nfloat32(req.ScoreAvg)
-	exist.AltTitles = utility.njson(req.AltTitles)
-	exist.ExternalIDs = utility.njson(req.ExternalIDs)
-	exist.CreatedAt = sql.NullTime{Time: now, Valid: true}
-	exist.UpdatedAt = sql.NullTime{Time: now, Valid: true}
+	exist.TitleNative  = sql.NullString{String:req.TitleNative, Valid:true}
+	exist.TitleEnglish = sql.NullString{String:req.TitleEnglish, Valid:true}
+	exist.Synopsis = sql.NullString{String:req.Synopsis, Valid:true}
+	exist.Type = utility.ToAnimeType(req.Type)  
+	exist.Status = utility.ToAnimeStatus(req.Status)
+	exist.Season = utility.ToSeason(req.Season)
+	exist.SeasonYear = req.SeasonYear
+	exist.AgeRating = utility.ToAgeRating(req.AgeRating)
+	exist.TotalEpisodes = req.TotalEpisodes
+	exist.AverageDurationMinutes = req.AverageDurationMinutes
+	exist.Country =  req.Country
+	exist.PremieredAt = utility.ToSqlNullTime(req.PremieredAt)
+	exist.EndedAt =  utility.ToSqlNullTime(req.EndedAt)
+	exist.Popularity = req.Popularity
+	exist.ScoreAvg = req.ScoreAvg
+	exist.AltTitles = utility.ToRawMessage(req.AltTitles)
+	exist.ExternalIDs = utility.ToRawMessage(req.ExternalIDs)
+	exist.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	exist.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
     // Simpan perubahan
     // err = as.animeRepository.Update(ctx, &exist)
@@ -169,14 +172,14 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
     //     Id: uuid.New().String(),
 	// 	Slug:req.Slug,
 	// 	TitleRomaji: req.TitleRomaji,
-	// 	TitleNative : utility.nstr(req.TitleNative),
-	// 	TitleEnglish: utility.nstr(req.TitleEnglish),
-	// 	Synopsis: utility.nstr(req.Synopsis),
+	// 	TitleNative : utility.ToString(req.TitleNative),
+	// 	TitleEnglish: utility.ToString(req.TitleEnglish),
+	// 	Synopsis: utility.ToString(req.Synopsis),
 	// 	Type: string(req.Type),  
 	// 	Status: string(req.Status),
-	// 	Season: utility.nstr(seasonToString(req.Season)),
+	// 	Season: utility.ToString(seasonToString(req.Season)),
 	// 	SeasonYear: nint16(req.SeasonYear),
-	// 	AgeRating: utility.nstr(ageToString(req.AgeRating)),
+	// 	AgeRating: utility.ToString(ageToString(req.AgeRating)),
 	// 	TotalEpisodes: utility.nint(req.TotalEpisodes),
 	// 	AverageDurationMinutes: utility.nint(req.AverageDurationMinutes),
 	// 	Country: sql.NullString{String: firstNonEmpty(ptrToString(req.Country), "JP"), Valid: true},
