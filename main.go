@@ -20,11 +20,11 @@ func main(){
 
 	authMiddleware := jwtMid.New(
 		jwtMid.Config{
-			signingKey:jwtMid.SigningKey{key:[]byte(config.Jwt.Key)},
-			ErrorHandler:func(ctx *fiber.Ctx, err error) error {
+			SigningKey:jwtMid.SigningKey{Key:[]byte(conf.Jwt.Key)},
+			ErrorHandler:func (ctx *fiber.Ctx, err error) error {
 				return ctx.Status(http.StatusUnauthorized).JSON(dto.CreateResponseError("Endpoint perlu token, silahkan login terlebih dahulu."))
-			}
-		}
+			},
+		},
 	)
 
 	userRepository := repository.NewUser(dbConnection)
@@ -32,9 +32,10 @@ func main(){
 
 
 	authService := service.NewAuth(conf, userRepository)
-	animeService := service.NewAnime(conf, animeRepository)
+	animeService := service.NewAnime(animeRepository)
 
 	api.NewAuth(app, authService)
+	api.NewAnime(app, animeService, authMiddleware)
 
 	_ = app.Listen(conf.Server.Host +":"+ conf.Server.Port)
 }
