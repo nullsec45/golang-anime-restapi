@@ -3,30 +3,31 @@ package domain
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 )
 
 type Anime struct {
-	Id                     string                  `db:"id"`
+	Id                     string                 `db:"id"`
 	Slug                   string                 `db:"slug"`
 	TitleRomaji            string                 `db:"title_romaji"`
 	TitleNative            sql.NullString         `db:"title_native"`
 	TitleEnglish           sql.NullString         `db:"title_english"`
 	Synopsis               sql.NullString         `db:"synopsis"`
 	Type                   dto.AnimeType          `db:"type"`
-	Season                 *dto.Season             `db:"season"`
-	SeasonYear             *int16                 `db:"season_year"`
+	Season                 *dto.Season            `db:"season"`
+	SeasonYear             int                    `db:"season_year"`
 	Status                 dto.AnimeStatus        `db:"status"`
-	AgeRating              *dto.AgeRating             `db:"age_rating"`
-	TotalEpisodes          *int                   `db:"total_episodes"`
-	AverageDurationMinutes *int                   `db:"average_duration_minutes"`
+	AgeRating              *dto.AgeRating         `db:"age_rating"`
+	TotalEpisodes          int                    `db:"total_episodes"`
+	AverageDurationMinutes int                    `db:"average_duration_minutes"`
 	Country                string                 `db:"country"` 
 	PremieredAt            sql.NullTime           `db:"premiered_at"`
 	EndedAt                sql.NullTime           `db:"ended_at"`
 	Popularity             int                    `db:"popularity"`
-	ScoreAvg               *float32               `db:"score_avg"`
-	AltTitles              map[string]interface{} `db:"alt_titles"`  
-	ExternalIDs            map[string]interface{} `db:"external_ids"`
+	ScoreAvg               float32                `db:"score_avg"`
+	AltTitles              json.RawMessage        `db:"alt_titles"`  
+	ExternalIDs            json.RawMessage        `db:"external_ids"`
 	CreatedAt              sql.NullTime           `db:"created_at"`
 	UpdatedAt              sql.NullTime           `db:"updated_at"`
 }
