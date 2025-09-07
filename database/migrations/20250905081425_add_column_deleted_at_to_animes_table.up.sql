@@ -1,1 +1,0 @@
-ALTER TABLE animes ADD COLUMN deleted_at TIMESTAMPTZ  NULL 
