@@ -2,7 +2,7 @@
 -- CREATE EXTENSION IF NOT EXISTS unaccent;
 
 CREATE TABLE animes (
-  id            BIGSERIAL PRIMARY KEY,
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   slug          TEXT NOT NULL UNIQUE,                          
   title_romaji  TEXT NOT NULL,
   title_native  TEXT,                                          
@@ -23,7 +23,8 @@ CREATE TABLE animes (
   alt_titles   JSONB DEFAULT '{}'::jsonb,                      
   external_ids JSONB DEFAULT '{}'::jsonb,                      
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at   TIMESTAMPTZ  NULL 
 );
 
 

@@ -1,6 +1,6 @@
 CREATE TABLE episodes (
-  id            BIGSERIAL PRIMARY KEY,
-  anime_id      BIGINT NOT NULL REFERENCES anime(id) ON DELETE CASCADE,
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  anime_id      UUID NOT NULL REFERENCES animes(id) ON DELETE CASCADE,
   number        INT NOT NULL,                                  -- nomor episode (1..n)
   season_number INT,                                           -- jika ingin grouping per season
   title         TEXT,

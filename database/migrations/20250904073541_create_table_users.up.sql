@@ -1,5 +1,5 @@
 CREATE TABLE "public"."users" (
-    "id" character varying(36) DEFAULT 'gen_random_uuid()' NOT NULL,
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     "email" character varying(255) NOT NULL,
     "password" character varying(255) NOT NULL
 )
