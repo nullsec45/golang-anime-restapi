@@ -9,7 +9,9 @@ import(
 	"database/sql"
 	"time"
 	"errors"
+	"github.com/gosimple/slug"
 	// "encoding/json"
+	"fmt"
 )
 
 type AnimeService struct {
@@ -51,8 +53,8 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 			EndedAt:                utility.ToTimePtr(v.EndedAt),                  
 			Popularity:             v.Popularity,
 			ScoreAvg:               v.ScoreAvg,                 
-			AltTitles:              utility.ToRawMessage(v.AltTitles),     
-			ExternalIDs:            utility.ToRawMessage(v.ExternalIDs),       
+			AltTitles:              v.AltTitles,     
+			ExternalIDs:            v.ExternalIDs,       
 		})
 	}
 
@@ -63,7 +65,7 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeData, err
     exist, err := as.animeRepository.FindById(ctx,id)
 
     if err != nil && exist.Id == "" {
-        return dto.AnimeData{}, errors.New("Data anime tidak ditemukan!.")
+        return dto.AnimeData{}, errors.New("Data anime not found!.")
     }
     
     if err != nil {
@@ -89,15 +91,22 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeData, err
 			EndedAt:                utility.ToTimePtr(exist.EndedAt),                  
 			Popularity:             exist.Popularity,
 			ScoreAvg:               exist.ScoreAvg,                 
-			AltTitles:              utility.ToRawMessage(exist.AltTitles),     
-			ExternalIDs:            utility.ToRawMessage(exist.ExternalIDs),   
+			AltTitles:              exist.AltTitles,     
+			ExternalIDs:            exist.ExternalIDs,   
     }, nil
 }
 
 func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) error {
+	animeSlug := req.Slug
+
+    if animeSlug == "" {
+        animeSlug = slug.Make(req.TitleRomaji) 
+		fmt.Println(animeSlug)
+    }
+	
  	anime := domain.Anime{
         Id: uuid.New().String(),
-		Slug:req.Slug,
+		Slug:animeSlug,
 		TitleRomaji: req.TitleRomaji,
 		TitleNative : sql.NullString{String:req.TitleNative, Valid:true},
 		TitleEnglish: sql.NullString{String:req.TitleEnglish, Valid:true},
@@ -114,8 +123,8 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
 		EndedAt: utility.ToSqlNullTime(req.EndedAt),
 		Popularity: req.Popularity,
 		ScoreAvg: req.ScoreAvg,
-		AltTitles: utility.ToRawMessage(req.AltTitles),
-		ExternalIDs: utility.ToRawMessage(req.ExternalIDs),
+		AltTitles: req.AltTitles,
+		ExternalIDs: req.ExternalIDs,
 		CreatedAt: sql.NullTime{Time: time.Now(), Valid: true},
 		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
     }
@@ -126,11 +135,9 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
 func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  error {
     // Cari data anime
     exist, err := as.animeRepository.FindById(ctx, req.Id)
-    // fmt.Println(err)
 
-    // Jika anime tidak ditemukan
     if err != nil && exist.Id == "" {
-        return errors.New("Data anime tidak ditemukan!.")
+        return errors.New("Data anime not found!.")
     }
     
     if err != nil {
@@ -155,8 +162,8 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
 	exist.EndedAt =  utility.ToSqlNullTime(req.EndedAt)
 	exist.Popularity = req.Popularity
 	exist.ScoreAvg = req.ScoreAvg
-	exist.AltTitles = utility.ToRawMessage(req.AltTitles)
-	exist.ExternalIDs = utility.ToRawMessage(req.ExternalIDs)
+	exist.AltTitles = req.AltTitles
+	exist.ExternalIDs = req.ExternalIDs
 	exist.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	exist.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 

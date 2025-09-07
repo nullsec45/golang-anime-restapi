@@ -3,7 +3,7 @@ package domain
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	// "encoding/json"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 )
 
@@ -26,8 +26,8 @@ type Anime struct {
 	EndedAt                sql.NullTime           `db:"ended_at"`
 	Popularity             int                    `db:"popularity"`
 	ScoreAvg               float32                `db:"score_avg"`
-	AltTitles              json.RawMessage        `db:"alt_titles"`  
-	ExternalIDs            json.RawMessage        `db:"external_ids"`
+	AltTitles              dto.AltTitles        `db:"alt_titles"`  
+	ExternalIDs            dto.ExternalIDs        `db:"external_ids"`
 	CreatedAt              sql.NullTime           `db:"created_at"`
 	UpdatedAt              sql.NullTime           `db:"updated_at"`
 }

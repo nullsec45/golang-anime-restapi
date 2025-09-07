@@ -4,9 +4,6 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"database/sql"
 	"encoding/json"
-	"time"
-	// "fmt"
-	// "strings"
 )
 
 func ToString(ns sql.NullString) string {
@@ -32,44 +29,15 @@ func ToAgeRatingPtr(s *string) *dto.AgeRating {
 	return &v
 }
 
-func ToRawMessage(v any) json.RawMessage {
-	if v == nil {
-		return json.RawMessage(`{}`)
-	}
-	switch x := v.(type) {
-	case json.RawMessage:
-		if len(x) == 0 {
-			return json.RawMessage(`{}`)
-		}
-		return x
-	case []byte:
-		if len(x) == 0 {
-			return json.RawMessage(`{}`)
-		}
-		return json.RawMessage(x)
-	case string:
-		if x == "" {
-			return json.RawMessage(`{}`)
-		}
-		if json.Valid([]byte(x)) {
-			return json.RawMessage(x)
-		}
-		b, _ := json.Marshal(x)
-		return json.RawMessage(b)
-	case map[string]any:
-		b, _ := json.Marshal(x)
-		return json.RawMessage(b)
-	default:
-		b, _ := json.Marshal(x)
-		return json.RawMessage(b)
-	}
-}
 
-func ToTimePtr(nt sql.NullTime) time.Time {
-	if nt.Valid {
-		return nt.Time
+
+func ToTimePtr(nt sql.NullTime) *dto.FlexibleTime {
+	if !nt.Valid {
+		return nil
 	}
-	return  time.Time{}
+	ft := dto.FlexibleTime{}
+	ft.Time = nt.Time.UTC()
+	return &ft
 }
 
 func ToAnimeType(v any) dto.AnimeType {
@@ -156,7 +124,6 @@ func ToAgeRating(v any) *dto.AgeRating {
 	}
 }
 
-// *string -> sql.NullString
 func nstr(p *string) sql.NullString {
 	if p == nil {
 		return sql.NullString{}
@@ -164,23 +131,7 @@ func nstr(p *string) sql.NullString {
 	return sql.NullString{String: *p, Valid: true}
 }
 
-// *int -> sql.NullInt32
-// func IntPtrFromNullInt32(n sql.NullInt32) *int {
-// 	if n.Valid {
-// 		v := int(n.Int32)
-// 		return &v
-// 	}
-// 	return nil
-// }
 
-// func ToSqlInt32(p *int) sql.NullInt32 {
-// 	if p == nil {
-// 		return sql.NullInt32{}
-// 	}
-// 	return sql.NullInt32{Int32: int32(*p), Valid: true}
-// }
-
-// *int16 -> sql.NullInt16
 func nint16(p *int16) sql.NullInt16 {
 	if p == nil {
 		return sql.NullInt16{}
@@ -188,15 +139,13 @@ func nint16(p *int16) sql.NullInt16 {
 	return sql.NullInt16{Int16: *p, Valid: true}
 }
 
-// *time.Time -> sql.NullTime
-func ToSqlNullTime(t time.Time) sql.NullTime {
-	if t.IsZero() {
+func ToSqlNullTime(ft *dto.FlexibleTime) sql.NullTime {
+	if ft == nil || ft.Time.IsZero() {
 		return sql.NullTime{}
 	}
-	return sql.NullTime{Time: t, Valid: true}
+	return sql.NullTime{Time: ft.Time.UTC(), Valid: true}
 }
 
-// *float32 -> sql.NullFloat64 (cast ke float64)
 func nfloat32(p *float32) sql.NullFloat64 {
 	if p == nil {
 		return sql.NullFloat64{}
@@ -204,7 +153,6 @@ func nfloat32(p *float32) sql.NullFloat64 {
 	return sql.NullFloat64{Float64: float64(*p), Valid: true}
 }
 
-// map[string]any -> json.RawMessage (untuk JSONB)
 func ToJson(m map[string]any) json.RawMessage {
 	if len(m) == 0 {
 		return nil
@@ -213,12 +161,11 @@ func ToJson(m map[string]any) json.RawMessage {
 	return json.RawMessage(b)
 }
 
-// enum pointer -> *string
 func SeasonToString(s *dto.Season) *string {
 	if s == nil {
 		return nil
 	}
-	v := string(*s) // "Winter|Spring|Summer|Fall"
+	v := string(*s) 
 	return &v
 }
 
@@ -226,11 +173,10 @@ func AgeToString(a *dto.AgeRating) *string {
 	if a == nil {
 		return nil
 	}
-	v := string(*a) // "G|PG|PG-13|R|R+|Rx"
+	v := string(*a)
 	return &v
 }
 
-// utilities kecil
 func FirstNonEmpty(vals ...string) string {
 	for _, v := range vals {
 		if v != "" {

@@ -2,8 +2,11 @@ package dto
 
 import (
 	// "database/sql"
+	// "time"
+	// "encoding/json"
+	"reflect"
 	"time"
-	"encoding/json"
+	"github.com/go-playground/validator/v10"
 )
 
 type AnimeType string
@@ -56,12 +59,34 @@ type AnimeData struct {
 	TotalEpisodes          int                   `json:"total_episodes,omitempty"`
 	AverageDurationMinutes int                   `json:"average_duration_minutes,omitempty"`
 	Country                string                 `json:"country"` 
-	PremieredAt            time.Time             `json:"premiered_at,omitempty"`
-	EndedAt                time.Time             `json:"ended_at,omitempty"`
-	Popularity             int                    `json:"popularity"`
+	PremieredAt            *FlexibleTime             `json:"premiered_at,omitempty"`
+	EndedAt                *FlexibleTime             `json:"ended_at,omitempty"`
+	Popularity             int                   `json:"popularity"`
 	ScoreAvg               float32               `json:"score_avg,omitempty"`
-	AltTitles              json.RawMessage `json:"alt_titles"`  
-	ExternalIDs            json.RawMessage `json:"external_ids"`
+	AltTitles              AltTitles       `json:"alt_titles"`  
+	ExternalIDs            ExternalIDs       `json:"external_ids"`
+}
+
+func NewValidator() *validator.Validate {
+	v := validator.New(validator.WithRequiredStructEnabled())
+
+	// Ajari validator cara “melihat” FlexibleTime sebagai time.Time
+	v.RegisterCustomTypeFunc(func(field reflect.Value) interface{} {
+		switch ft := field.Interface().(type) {
+		case FlexibleTime:
+			return ft.Time
+		case *FlexibleTime:
+			if ft == nil {
+				// biar omitempty jalan
+				return time.Time{}
+			}
+			return ft.Time
+		default:
+			return nil
+		}
+	}, FlexibleTime{}, (*FlexibleTime)(nil))
+
+	return v
 }
 
 
@@ -80,12 +105,12 @@ type CreateAnimeRequest struct {
 	TotalEpisodes          int                     `json:"total_episodes,omitempty" validate:"omitempty,gte=0"`
 	AverageDurationMinutes int                     `json:"average_duration_minutes,omitempty" validate:"omitempty,gte=0"`
 	Country                string                  `json:"country,omitempty" validate:"omitempty,len=2"` 
-	PremieredAt            time.Time               `json:"premiered_at,omitempty" validate:"omitempty,datetime=2006-01-02"`
-	EndedAt                time.Time               `json:"ended_at,omitempty" validate:"omitempty,datetime=2006-01-02"`
+	PremieredAt            *FlexibleTime               `json:"premiered_at,omitempty" validate:"omitempty"`
+	EndedAt                *FlexibleTime               `json:"ended_at,omitempty" validate:"omitempty"`
 	Popularity             int                    `json:"popularity,omitempty" validate:"omitempty,gte=0"`
 	ScoreAvg               float32                `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
-	AltTitles              json.RawMessage  `json:"alt_titles,omitempty"`
-	ExternalIDs            json.RawMessage  `json:"external_ids,omitempty"`
+	AltTitles              AltTitles  `json:"alt_titles,omitempty"`
+	ExternalIDs            ExternalIDs  `json:"external_ids,omitempty"`
 }
 
 type UpdateAnimeRequest struct {
@@ -103,10 +128,10 @@ type UpdateAnimeRequest struct {
 	TotalEpisodes          int                     `json:"total_episodes,omitempty" validate:"omitempty,gte=0"`
 	AverageDurationMinutes int                     `json:"average_duration_minutes,omitempty" validate:"omitempty,gte=0"`
 	Country                string                  `json:"country,omitempty" validate:"omitempty,len=2"` 
-	PremieredAt            time.Time               `json:"premiered_at,omitempty" validate:"omitempty,datetime=2006-01-02"`
-	EndedAt                time.Time               `json:"ended_at,omitempty" validate:"omitempty,datetime=2006-01-02"`
+	PremieredAt            *FlexibleTime               `json:"premiered_at,omitempty" validate:"omitempty"`
+	EndedAt                *FlexibleTime               `json:"ended_at,omitempty" validate:"omitempty"`
 	Popularity             int                    `json:"popularity,omitempty" validate:"omitempty,gte=0"`
 	ScoreAvg               float32                `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
-	AltTitles              json.RawMessage  `json:"alt_titles,omitempty"`
-	ExternalIDs            json.RawMessage  `json:"external_ids,omitempty"`
+	AltTitles              AltTitles  `json:"alt_titles,omitempty"`
+	ExternalIDs            ExternalIDs  `json:"external_ids,omitempty"`
 }

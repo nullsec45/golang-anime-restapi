@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
-	"fmt"
+	// "fmt"
 )
 
 type AuthApi struct {
@@ -26,7 +26,7 @@ func NewAuth(
 }
 
 func (api AuthApi) Login (ctx *fiber.Ctx) error {
-	fmt.Println("Auth Login Function Called")
+	// fmt.Println("Auth Login Function Called")
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 

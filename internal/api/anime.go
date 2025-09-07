@@ -9,6 +9,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 	// "fmt"
+	// "encoding/json"
 )
 
 type AnimeAPI struct {
@@ -34,10 +35,10 @@ func NewAnime(
 }
 
 func (ana AnimeAPI) Index(ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
+	an, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
-	res, err := ana.animeService.Index(c)
+	res, err := ana.animeService.Index(an)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
@@ -47,11 +48,11 @@ func (ana AnimeAPI) Index(ctx *fiber.Ctx) error {
 }
 
 func (ana AnimeAPI) Show (ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
+	an, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
 	id := ctx.Params("id")
-	res, err := ana.animeService.Show(c, id)
+	res, err := ana.animeService.Show(an, id)
 
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
@@ -61,14 +62,32 @@ func (ana AnimeAPI) Show (ctx *fiber.Ctx) error {
 }
 
 func (ana AnimeAPI) Create (ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	an, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	var req dto.CreateAnimeRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.SendStatus(http.StatusUnprocessableEntity)
+		return ctx.Status(http.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData("Failed created data", map[string]string{
+				"body": err.Error(),
+			}),
+		)
 	}
+		// fmt.Println(json.RawMessage(req.AltTitles))
+
+	// if err := ctx.BodyParser(&req); err != nil {
+		// fmt.Println(err)
+		// return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+		// 	"Failed created data",
+		// 	 map[string]any{
+		// 		"error": err,
+		// 	},
+		// ))
+
+		// return ctx.SendStatus(http.StatusUnprocessableEntity)
+	// }
+	
 	fails := utility.Validate(req)
 	
 	if len(fails) > 0{
@@ -78,7 +97,7 @@ func (ana AnimeAPI) Create (ctx *fiber.Ctx) error {
 		))
 	}
 
-	err := ana.animeService.Create(c, req)
+	err := ana.animeService.Create(an, req)
 
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
@@ -88,7 +107,7 @@ func (ana AnimeAPI) Create (ctx *fiber.Ctx) error {
 }
 
 func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	an, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
 	var req dto.UpdateAnimeRequest
@@ -106,7 +125,7 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 	}
 
 	req.Id=ctx.Params("id")
-	err := ana.animeService.Update(c,req)
+	err := ana.animeService.Update(an,req)
 	
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
@@ -116,11 +135,11 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 }
 
 func (ana AnimeAPI) Delete (ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
+	an, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
 	id := ctx.Params("id")
-	err := ana.animeService.Delete(c, id)
+	err := ana.animeService.Delete(an, id)
 
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
