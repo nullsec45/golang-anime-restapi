@@ -12,7 +12,7 @@ type CreateAnimeEpisodeRequest struct {
 	SeasonNumber    int    `json:"season_number,omitempty" validate:"omitempty,min=1"`
 	Title           string `json:"title,omitempty" validate:"omitempty"`
 	Synopsis        string `json:"synopsis,omitempty" validate:"omitempty"`
-	AirDate         string `json:"air_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
+	AirDate         *FlexibleTime `json:"air_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
 	DurationMinutes int    `json:"duration_minutes,omitempty" validate:"omitempty,min=1"`
 	IsSpecial       bool   `json:"is_special,omitempty"`
 }

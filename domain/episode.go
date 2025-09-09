@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 	"database/sql"
-	"time"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 )
 
@@ -15,18 +14,18 @@ type AnimeEpisode struct {
 	Title           string        `db:"title"`             
 	Synopsis        string        `db:"synopsis"`          
 	AirDate         sql.NullTime  `db:"air_date"` 
-	DurationMinutes sql.NullTime  `db:"duration_minutes"`  
+	DurationMinutes int  `db:"duration_minutes"`  
 	IsSpecial       bool          `db:"is_special"`
-	CreatedAt       time.Time     `db:"created_at"`
-	UpdatedAt       time.Time     `db:"updated_at"`
+	CreatedAt       sql.NullTime     `db:"created_at"`
+	UpdatedAt       sql.NullTime     `db:"updated_at"`
 }
 
 type AnimeEpisodeRepository interface {
-	FindByAnimeId(ctx context.Context, id string) ([]AnimeEpisode, error)
-	FindById(ctx context.Context, animeId string, id string) (AnimeEpisode, error)
-	Save(ctx context.Context, data []AnimeEpisode) error
+	FindByAnimeId(ctx context.Context, animeId string) ([]AnimeEpisode, error)
+	FindById(ctx context.Context,  id string) (AnimeEpisode, error)
+	Save(ctx context.Context, data *AnimeEpisode) error
 	DeleteByAnimeId(ctx context.Context, animeId string) error
-	DeleteById(ctx context.Context, id []string) error
+	DeleteById(ctx context.Context, id string) error
 }
 
 type AnimeEpisodeService interface {

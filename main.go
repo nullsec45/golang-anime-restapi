@@ -29,13 +29,16 @@ func main(){
 
 	userRepository := repository.NewUser(dbConnection)
 	animeRepository := repository.NewAnime(dbConnection)
+	animeEpisodeRepository := repository.NewAnimeEpisode(dbConnection)
 
 
 	authService := service.NewAuth(conf, userRepository)
 	animeService := service.NewAnime(animeRepository)
+	animeEpisodeService := service.NewAnimeEpisode(animeRepository, animeEpisodeRepository)
 
 	api.NewAuth(app, authService)
 	api.NewAnime(app, animeService, authMiddleware)
+	api.NewAnimeEpisode(app, animeEpisodeService, authMiddleware)
 
 	_ = app.Listen(conf.Server.Host +":"+ conf.Server.Port)
 }
