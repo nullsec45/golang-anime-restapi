@@ -67,6 +67,25 @@ type AnimeData struct {
 	ExternalIDs            ExternalIDs       `json:"external_ids"`
 }
 
+type AnimeEpisodeData struct {
+	Id              string `json:"id"`
+	AnimeID         string `json:"anime_id"`
+	Number          int    `json:"number"`
+	SeasonNumber    int    `json:"season_number,omitempty"`
+	Title           string `json:"title,omitempty"`
+	Synopsis        string `json:"synopsis,omitempty"`
+	AirDate         string `json:"air_date,omitempty"` // format "2006-01-02"
+	DurationMinutes int    `json:"duration_minutes,omitempty"`
+	IsSpecial       bool   `json:"is_special"`
+	CreatedAt       string `json:"created_at"` // ISO8601 (RFC3339) saat di-map
+	UpdatedAt       string `json:"updated_at"` // ISO8601 (RFC3339) saat di-map
+}
+
+type AnimeShowData struct {
+	AnimeData
+	Episodes []AnimeEpisodeData `json:"episodes"`
+}
+
 func NewValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
