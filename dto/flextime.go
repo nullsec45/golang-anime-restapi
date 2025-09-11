@@ -1,14 +1,17 @@
 package dto
 
 import (
-	"bytes"
 	"encoding/json"
-	"reflect"
 	"strings"
 	"time"
+	"fmt"
 )
 
-type FlexibleTime struct{ time.Time }
+type FlexibleTime struct{ 
+	time.Time 
+	Layout string
+
+}
 
 var ftLayouts = []string{
 	time.RFC3339,
@@ -16,28 +19,34 @@ var ftLayouts = []string{
 	"2006-01-02 15:04:05",
 }
 
+func (ft FlexibleTime) IsZero() bool { return ft.Time.IsZero() }
+
+
 func (ft *FlexibleTime) UnmarshalJSON(b []byte) error {
-	if bytes.Equal(b, []byte("null")) {
+	s := strings.Trim(string(b), `"`)
+	if s == "" || s == "null" {
 		*ft = FlexibleTime{}
 		return nil
 	}
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
+
+	allowed := []string{
+		"2006-01-02",         
+		time.RFC3339,         
+		"2006-01-02 15:04:05",
 	}
-	s = strings.TrimSpace(s)
-	if s == "" {
-		*ft = FlexibleTime{}
-		return nil
-	}
-	for _, layout := range ftLayouts {
+
+	var lastErr error
+	for _, layout := range allowed {
 		if t, err := time.Parse(layout, s); err == nil {
-			ft.Time = t.UTC()
+			*ft = FlexibleTime{Time: t, Layout: layout}
 			return nil
+		} else {
+			lastErr = err
 		}
 	}
-	return &json.UnmarshalTypeError{Value: "string (bad date format)", Type: reflect.TypeOf(time.Time{})}
+	return fmt.Errorf("invalid date %q: must be YYYY-MM-DD (or one of allowed layouts): %w", s, lastErr)
 }
+
 
 func (ft FlexibleTime) MarshalJSON() ([]byte, error) {
 	if ft.Time.IsZero() {
