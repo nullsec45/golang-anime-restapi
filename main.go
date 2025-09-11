@@ -33,7 +33,7 @@ func main(){
 
 
 	authService := service.NewAuth(conf, userRepository)
-	animeService := service.NewAnime(animeRepository)
+	animeService := service.NewAnime(animeRepository, animeEpisodeRepository)
 	animeEpisodeService := service.NewAnimeEpisode(animeRepository, animeEpisodeRepository)
 
 	api.NewAuth(app, authService)

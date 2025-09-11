@@ -16,11 +16,16 @@ import(
 
 type AnimeService struct {
 	animeRepository domain.AnimeRepository
+	animeEpisodeRepository domain.AnimeEpisodeRepository
 }
 
-func NewAnime(animeRepository domain.AnimeRepository) domain.AnimeService {
+func NewAnime(
+	animeRepository domain.AnimeRepository,
+	animeEpisodeRepository domain.AnimeEpisodeRepository,
+) domain.AnimeService {
 	return &AnimeService{
 		animeRepository: animeRepository,
+		animeEpisodeRepository:animeEpisodeRepository,
 	}
 }
 
@@ -61,19 +66,41 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 	return animeData, nil
 }
 
-func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeData, error) {
+func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData, error) {
     exist, err := as.animeRepository.FindById(ctx,id)
 
     if err != nil && exist.Id == "" {
-        return dto.AnimeData{}, errors.New("Data anime not found!.")
+        return dto.AnimeShowData{}, domain.AnimeNotFound
     }
     
     if err != nil {
-        return dto.AnimeData{}, err
+        return dto.AnimeShowData{}, err
     }
 
-    return dto.AnimeData{
-      		Id:                     exist.Id,
+	episodes, err := as.animeEpisodeRepository.FindByAnimeId(ctx, exist.Id)
+	
+	if err != nil {
+		return dto.AnimeShowData{}, err
+	}
+
+	episodesData := make([]dto.AnimeEpisodeData, 0)
+	for _, v := range episodes {
+		episodesData = append(episodesData, dto.AnimeEpisodeData{
+			Id:              v.Id,
+			AnimeId:         v.AnimeId,
+			Number:          v.Number,
+			SeasonNumber:    v.SeasonNumber,
+			Title:           v.Title,
+			Synopsis:        v.Synopsis,
+			AirDate:         utility.ToTimePtr(v.AirDate),
+			DurationMinutes: v.DurationMinutes,
+			IsSpecial:       v.IsSpecial,
+		})
+	}
+
+    return dto.AnimeShowData{
+		AnimeData:dto.AnimeData{
+			Id:                     exist.Id,
 			Slug:                   exist.Slug,
 			TitleRomaji:            exist.TitleRomaji,
 			TitleNative:            utility.ToString(exist.TitleNative),         
@@ -93,6 +120,8 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeData, err
 			ScoreAvg:               exist.ScoreAvg,                 
 			AltTitles:              exist.AltTitles,     
 			ExternalIDs:            exist.ExternalIDs,   
+		},
+		Episodes:episodesData,
     }, nil
 }
 

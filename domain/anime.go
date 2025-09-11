@@ -26,7 +26,7 @@ type Anime struct {
 	EndedAt                sql.NullTime           `db:"ended_at"`
 	Popularity             int                    `db:"popularity"`
 	ScoreAvg               float32                `db:"score_avg"`
-	AltTitles              dto.AltTitles        `db:"alt_titles"`  
+	AltTitles              dto.AltTitles          `db:"alt_titles"`  
 	ExternalIDs            dto.ExternalIDs        `db:"external_ids"`
 	CreatedAt              sql.NullTime           `db:"created_at"`
 	UpdatedAt              sql.NullTime           `db:"updated_at"`
@@ -42,7 +42,7 @@ type AnimeRepository interface {
 
 type AnimeService interface {
 	Index(ctx context.Context) ([]dto.AnimeData, error)
-	Show(ctx context.Context, id string) (dto.AnimeData, error)
+	Show(ctx context.Context, id string) (dto.AnimeShowData, error)
 	Create(ctx context.Context, req dto.CreateAnimeRequest) error
 	Update(ctx context.Context, req dto.UpdateAnimeRequest) error
 	Delete(ctx context.Context, id string) error
