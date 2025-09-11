@@ -3,8 +3,8 @@ package domain
 import "context"
 
 type User struct {
-	Id string `db:"id"`
-	Email string `db:"email"`
+	Id       string `db:"id"`
+	Email    string `db:"email"`
 	Password string `db:"password"`
 }
 

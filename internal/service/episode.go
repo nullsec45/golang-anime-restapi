@@ -29,24 +29,15 @@ func NewAnimeEpisode(
 func (as AnimeEpisodeService) Create(ctx context.Context, req dto.CreateAnimeEpisodeRequest) error {
 	anime, err := as.animeRepository.FindById(ctx, req.AnimeId)
 
-	if err != nil {
-		return err
-	}
-
 	if anime.Id == "" {
 		return domain.AnimeNotFound
 	}
 
-	// var airDate sql.NullTime
-	// if s := strings.TrimSpace(req.AirDate); s != "" {
-	// 	d, err := time.Parse("2006-01-02", s)
-	// 	if err != nil {
-	// 		return errors.New("air_date harus format YYYY-MM-DD")
-	// 	}
-	// 	d = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
-	// 	airDate = sql.NullTime{Time: d, Valid: true}
-	// }
 
+	if err != nil {
+		return err
+	}
+	
  	ep := domain.AnimeEpisode{
 		Id:              uuid.NewString(),
 		AnimeId:         req.AnimeId,

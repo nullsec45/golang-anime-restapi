@@ -30,7 +30,7 @@ func NewAnimeEpisode(
 	// episode.Get("", epAPI.Index)
 	episode.Post("/", epAPI.Create)
 	// episode.Put(":id", epAPI.Update)
-	episode.Delete(":animeId", epAPI.DeleteByAnimeId)
+	episode.Delete("anime/:animeId", epAPI.DeleteByAnimeId)
 	episode.Delete(":id", epAPI.DeleteById)
 	// episode.Get(":id", epAPI.Show)
 }
@@ -69,6 +69,15 @@ func (epa EpisodeAPI) Create (ctx *fiber.Ctx) error {
 	var req dto.CreateAnimeEpisodeRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData("Failed created data", map[string]string{
+				"body": err.Error(),
+			}),
+		)
+	}
+
+	if err := req.Validate(); err != nil {
+		// mapping validator errors -> 422 response, dll
 		return ctx.Status(http.StatusBadRequest).JSON(
 			dto.CreateResponseErrorData("Failed created data", map[string]string{
 				"body": err.Error(),

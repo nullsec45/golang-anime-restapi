@@ -1,9 +1,6 @@
 package dto
 
 import (
-	// "database/sql"
-	// "time"
-	// "encoding/json"
 	"reflect"
 	"time"
 	"github.com/go-playground/validator/v10"
@@ -46,40 +43,27 @@ const (
 
 type AnimeData struct {
 	Id                     string                  `json:"id"`
-	Slug                   string                 `json:"slug"`
-	TitleRomaji            string                 `json:"title_romaji"`
-	TitleNative            string                `json:"title_native,omitempty"`
-	TitleEnglish           string                `json:"title_english,omitempty"`
-	Synopsis               string                `json:"synopsis,omitempty"`
-	Type                   AnimeType              `json:"type"`
-	Season                 *Season                `json:"season,omitempty"`
-	SeasonYear             int                  `json:"season_year,omitempty"`
-	Status                 AnimeStatus            `json:"status"`
-	AgeRating              *AgeRating             `json:"age_rating,omitempty"`
-	TotalEpisodes          int                   `json:"total_episodes,omitempty"`
-	AverageDurationMinutes int                   `json:"average_duration_minutes,omitempty"`
-	Country                string                 `json:"country"` 
-	PremieredAt            *FlexibleTime             `json:"premiered_at,omitempty"`
-	EndedAt                *FlexibleTime             `json:"ended_at,omitempty"`
-	Popularity             int                   `json:"popularity"`
-	ScoreAvg               float32               `json:"score_avg,omitempty"`
-	AltTitles              AltTitles       `json:"alt_titles"`  
-	ExternalIDs            ExternalIDs       `json:"external_ids"`
+	Slug                   string                  `json:"slug"`
+	TitleRomaji            string                  `json:"title_romaji"`
+	TitleNative            string                  `json:"title_native,omitempty"`
+	TitleEnglish           string                  `json:"title_english,omitempty"`
+	Synopsis               string                  `json:"synopsis,omitempty"`
+	Type                   AnimeType               `json:"type"`
+	Season                 *Season                 `json:"season,omitempty"`
+	SeasonYear             int                     `json:"season_year,omitempty"`
+	Status                 AnimeStatus             `json:"status"`
+	AgeRating              *AgeRating              `json:"age_rating,omitempty"`
+	TotalEpisodes          int                     `json:"total_episodes,omitempty"`
+	AverageDurationMinutes int                     `json:"average_duration_minutes,omitempty"`
+	Country                string                  `json:"country"` 
+	PremieredAt            *FlexibleTime           `json:"premiered_at,omitempty"`
+	EndedAt                *FlexibleTime           `json:"ended_at,omitempty"`
+	Popularity             int                     `json:"popularity"`
+	ScoreAvg               float32                 `json:"score_avg,omitempty"`
+	AltTitles              AltTitles               `json:"alt_titles"`  
+	ExternalIDs            ExternalIDs             `json:"external_ids"`
 }
 
-type AnimeEpisodeData struct {
-	Id              string `json:"id"`
-	AnimeID         string `json:"anime_id"`
-	Number          int    `json:"number"`
-	SeasonNumber    int    `json:"season_number,omitempty"`
-	Title           string `json:"title,omitempty"`
-	Synopsis        string `json:"synopsis,omitempty"`
-	AirDate         string `json:"air_date,omitempty"` // format "2006-01-02"
-	DurationMinutes int    `json:"duration_minutes,omitempty"`
-	IsSpecial       bool   `json:"is_special"`
-	CreatedAt       string `json:"created_at"` // ISO8601 (RFC3339) saat di-map
-	UpdatedAt       string `json:"updated_at"` // ISO8601 (RFC3339) saat di-map
-}
 
 type AnimeShowData struct {
 	AnimeData
@@ -89,14 +73,12 @@ type AnimeShowData struct {
 func NewValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
-	// Ajari validator cara “melihat” FlexibleTime sebagai time.Time
 	v.RegisterCustomTypeFunc(func(field reflect.Value) interface{} {
 		switch ft := field.Interface().(type) {
 		case FlexibleTime:
 			return ft.Time
 		case *FlexibleTime:
 			if ft == nil {
-				// biar omitempty jalan
 				return time.Time{}
 			}
 			return ft.Time
@@ -124,12 +106,12 @@ type CreateAnimeRequest struct {
 	TotalEpisodes          int                     `json:"total_episodes,omitempty" validate:"omitempty,gte=0"`
 	AverageDurationMinutes int                     `json:"average_duration_minutes,omitempty" validate:"omitempty,gte=0"`
 	Country                string                  `json:"country,omitempty" validate:"omitempty,len=2"` 
-	PremieredAt            *FlexibleTime               `json:"premiered_at,omitempty" validate:"omitempty"`
-	EndedAt                *FlexibleTime               `json:"ended_at,omitempty" validate:"omitempty"`
-	Popularity             int                    `json:"popularity,omitempty" validate:"omitempty,gte=0"`
-	ScoreAvg               float32                `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
-	AltTitles              AltTitles  `json:"alt_titles,omitempty"`
-	ExternalIDs            ExternalIDs  `json:"external_ids,omitempty"`
+	PremieredAt            *FlexibleTime           `json:"premiered_at,omitempty" validate:"omitempty"`
+	EndedAt                *FlexibleTime           `json:"ended_at,omitempty" validate:"omitempty"`
+	Popularity             int                     `json:"popularity,omitempty" validate:"omitempty,gte=0"`
+	ScoreAvg               float32                 `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
+	AltTitles              AltTitles               `json:"alt_titles,omitempty"`
+	ExternalIDs            ExternalIDs             `json:"external_ids,omitempty"`
 }
 
 type UpdateAnimeRequest struct {
@@ -147,10 +129,10 @@ type UpdateAnimeRequest struct {
 	TotalEpisodes          int                     `json:"total_episodes,omitempty" validate:"omitempty,gte=0"`
 	AverageDurationMinutes int                     `json:"average_duration_minutes,omitempty" validate:"omitempty,gte=0"`
 	Country                string                  `json:"country,omitempty" validate:"omitempty,len=2"` 
-	PremieredAt            *FlexibleTime               `json:"premiered_at,omitempty" validate:"omitempty"`
-	EndedAt                *FlexibleTime               `json:"ended_at,omitempty" validate:"omitempty"`
-	Popularity             int                    `json:"popularity,omitempty" validate:"omitempty,gte=0"`
-	ScoreAvg               float32                `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
-	AltTitles              AltTitles  `json:"alt_titles,omitempty"`
-	ExternalIDs            ExternalIDs  `json:"external_ids,omitempty"`
+	PremieredAt            *FlexibleTime           `json:"premiered_at,omitempty" validate:"omitempty"`
+	EndedAt                *FlexibleTime           `json:"ended_at,omitempty" validate:"omitempty"`
+	Popularity             int                     `json:"popularity,omitempty" validate:"omitempty,gte=0"`
+	ScoreAvg               float32                 `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
+	AltTitles              AltTitles               `json:"alt_titles,omitempty"`
+	ExternalIDs            ExternalIDs             `json:"external_ids,omitempty"`
 }

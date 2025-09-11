@@ -1,14 +1,14 @@
 package dto
 
 type ResponseSuccess[T any] struct {
-	Code   int      `json:"code"`	
+	Code    int         `json:"code"`	
 	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
 type ResponseError[T any] struct {
-	Code   int      `json:"code"`	
-	Message string      `json:"message"`
+	Code     int         `json:"code"`	
+	Message  string      `json:"message"`
 	Error    interface{} `json:"error,omitempty"`
 }
 

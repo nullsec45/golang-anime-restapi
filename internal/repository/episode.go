@@ -5,7 +5,6 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/doug-martin/goqu/v9"
 	"context"
-	"time"
 )
 
 type AnimeEpisodeRepository struct {
@@ -21,7 +20,6 @@ func NewAnimeEpisode(conf *sql.DB) (domain.AnimeEpisodeRepository){
 func (er *AnimeEpisodeRepository) FindByAnimeId(ctx context.Context, animeId string) (result []domain.AnimeEpisode, err error) {
 	dataset := er.db.From("episodes").Where(
 		goqu.C("anime_id").Eq(animeId),
-		goqu.C("deleted_at").IsNull(),
 	)
 	err = dataset.ScanStructsContext(ctx, &result)
 	return
@@ -30,7 +28,6 @@ func (er *AnimeEpisodeRepository) FindByAnimeId(ctx context.Context, animeId str
 func (er *AnimeEpisodeRepository) FindById(ctx context.Context, id string) (result domain.AnimeEpisode, err error) {
 	dataset := er.db.From("episodes").Where(
 		goqu.C("id").Eq(id),
-		goqu.C("deleted_at").IsNull(),
 	)
 	found, err := dataset.ScanStructContext(ctx, &result)
 	if 	!found {
@@ -52,8 +49,7 @@ func (er *AnimeEpisodeRepository) Save (ctx context.Context, anm *domain.AnimeEp
 // }
 
 func (er *AnimeEpisodeRepository) DeleteByAnimeId(ctx context.Context, animeId string) error {
-	executor := er.db.Update("episodes").
-	                        Set(goqu.Record{"deleted_at":sql.NullTime{Valid:true, Time:time.Now()}}).
+	executor := er.db.Delete("episodes").
 							Where(goqu.C("anime_id").Eq(animeId)).
 							Executor()
 	_, err := executor.ExecContext(ctx)
@@ -61,8 +57,7 @@ func (er *AnimeEpisodeRepository) DeleteByAnimeId(ctx context.Context, animeId s
 }
 
 func (er *AnimeEpisodeRepository) DeleteById(ctx context.Context, id string) error {
-	executor := er.db.Update("episodes").
-	                        Set(goqu.Record{"deleted_at":sql.NullTime{Valid:true, Time:time.Now()}}).
+	executor := er.db.Delete("episodes").
 							Where(goqu.C("id").Eq(id)).
 							Executor()
 	_, err := executor.ExecContext(ctx)

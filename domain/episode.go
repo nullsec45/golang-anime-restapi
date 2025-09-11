@@ -14,10 +14,10 @@ type AnimeEpisode struct {
 	Title           string        `db:"title"`             
 	Synopsis        string        `db:"synopsis"`          
 	AirDate         sql.NullTime  `db:"air_date"` 
-	DurationMinutes int  `db:"duration_minutes"`  
+	DurationMinutes int           `db:"duration_minutes"`  
 	IsSpecial       bool          `db:"is_special"`
-	CreatedAt       sql.NullTime     `db:"created_at"`
-	UpdatedAt       sql.NullTime     `db:"updated_at"`
+	CreatedAt       sql.NullTime  `db:"created_at"`
+	UpdatedAt       sql.NullTime  `db:"updated_at"`
 }
 
 type AnimeEpisodeRepository interface {
