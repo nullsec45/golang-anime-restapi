@@ -30,15 +30,18 @@ func main(){
 	userRepository := repository.NewUser(dbConnection)
 	animeRepository := repository.NewAnime(dbConnection)
 	animeEpisodeRepository := repository.NewAnimeEpisode(dbConnection)
+	animeGenreRepository := repository.NewAnimeGenre(dbConnection)
 
 
 	authService := service.NewAuth(conf, userRepository)
 	animeService := service.NewAnime(animeRepository, animeEpisodeRepository)
 	animeEpisodeService := service.NewAnimeEpisode(animeRepository, animeEpisodeRepository)
+	animeGenreService := service.NewAnimeGenre(animeGenreRepository)
 
 	api.NewAuth(app, authService)
 	api.NewAnime(app, animeService, authMiddleware)
 	api.NewAnimeEpisode(app, animeEpisodeService, authMiddleware)
+	api.NewAnimeGenre(app, animeGenreService, authMiddleware)
 
 	_ = app.Listen(conf.Server.Host +":"+ conf.Server.Port)
 }
