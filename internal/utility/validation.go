@@ -21,11 +21,13 @@ func Validate[T any](data T)map[string]string{
 func TranslateTag(fd validator.FieldError) string {
 	switch fd.ActualTag(){
 	case "required" :
-		return fmt.Sprintf("Field %s wajib diisi", strings.ToLower(fd.StructField()))
+		return fmt.Sprintf("Field %s is required", strings.ToLower(fd.StructField()))
 	case "min" :
-		return fmt.Sprintf("Field %s size minimal", strings.ToLower(fd.StructField()), fd.Param())
+		return fmt.Sprintf("Field %s size minimum", strings.ToLower(fd.StructField()), fd.Param())
 	case "unique" :
-		return fmt.Sprintf("Field %s harus unique", strings.ToLower(fd.StructField()))
+		return fmt.Sprintf("Field %s must be unique", strings.ToLower(fd.StructField()))
+	case "email" :
+		return fmt.Sprintf("Field %s must be email valid", strings.ToLower(fd.StructField()))
 	}
 
 	return "validasi gagal"
