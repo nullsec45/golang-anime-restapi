@@ -74,20 +74,7 @@ func (ana AnimeAPI) Create (ctx *fiber.Ctx) error {
 			}),
 		)
 	}
-		// fmt.Println(json.RawMessage(req.AltTitles))
 
-	// if err := ctx.BodyParser(&req); err != nil {
-		// fmt.Println(err)
-		// return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
-		// 	"Failed created data",
-		// 	 map[string]any{
-		// 		"error": err,
-		// 	},
-		// ))
-
-		// return ctx.SendStatus(http.StatusUnprocessableEntity)
-	// }
-	
 	fails := utility.Validate(req)
 	
 	if len(fails) > 0{

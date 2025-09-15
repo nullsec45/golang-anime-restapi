@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 	"database/sql"
-	// "encoding/json"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 )
 

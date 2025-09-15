@@ -23,3 +23,8 @@ func (userRepo UserRepository) FindByEmail(ctx context.Context, email string) (u
 	return
 }
 
+func (userRepo *UserRepository) Save (ctx context.Context, user *domain.User) error {
+	executor := userRepo.db.Insert("users").Rows(user).Executor()
+	_, err := executor.ExecContext(ctx)
+	return err
+}
