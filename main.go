@@ -38,10 +38,13 @@ func main(){
 	animeEpisodeService := service.NewAnimeEpisode(animeRepository, animeEpisodeRepository)
 	animeGenreService := service.NewAnimeGenre(animeGenreRepository)
 
-	api.NewAuth(app, authService)
-	api.NewAnime(app, animeService, authMiddleware)
-	api.NewAnimeEpisode(app, animeEpisodeService, authMiddleware)
-	api.NewAnimeGenre(app, animeGenreService, authMiddleware)
+	v1 := fiber.New()
+	api.NewAuth(v1, authService)
+	api.NewAnime(v1, animeService, authMiddleware)
+	api.NewAnimeEpisode(v1, animeEpisodeService, authMiddleware)
+	api.NewAnimeGenre(v1, animeGenreService, authMiddleware)
+	
+	app.Mount("/v1", v1)
 
 	_ = app.Listen(conf.Server.Host +":"+ conf.Server.Port)
 }
