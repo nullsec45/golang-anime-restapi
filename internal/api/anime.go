@@ -100,8 +100,14 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 	var req dto.UpdateAnimeRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.SendStatus(http.StatusUnprocessableEntity)
+		return ctx.Status(http.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData("Failed created data", map[string]string{
+				"body": err.Error(),
+			}),
+		)
 	}
+
+
 	fails := utility.Validate(req)
 	
 	if len(fails) > 0{
