@@ -23,8 +23,10 @@ func NewAuth(
 		authService : authService,
 	}
 
-	app.Post("/auth/login", api.Login)
-	app.Post("/auth/register", api.Register)
+	auth := app.Group("/auth")
+
+	auth.Post("/login", api.Login)
+	auth.Post("/register", api.Register)
 }
 
 func (api AuthApi) Login (ctx *fiber.Ctx) error {
