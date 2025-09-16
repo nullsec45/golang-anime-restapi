@@ -25,7 +25,7 @@ func NewAnimeEpisode(
 		animeEpisodeService: animeEpisodeService,
 	}
 
-	episode := app.Group("/anime-episodes", authMiddleware)
+	episode := app.Group("/episodes", authMiddleware)
 
 	// episode.Get("", epAPI.Index)
 	episode.Post("/", epAPI.Create)
