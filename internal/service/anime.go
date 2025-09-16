@@ -10,7 +10,6 @@ import(
 	"time"
 	"errors"
 	"github.com/gosimple/slug"
-	// "encoding/json"
 	"fmt"
 )
 
@@ -155,7 +154,6 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
 		AltTitles: req.AltTitles,
 		ExternalIDs: req.ExternalIDs,
 		CreatedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
     }
 
 	return as.animeRepository.Save(ctx, &anime)
@@ -173,8 +171,15 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
         return  err
     }
 
+	animeSlug := req.Slug
+
+    if animeSlug == "" {
+        animeSlug = slug.Make(req.TitleRomaji) 
+		fmt.Println(animeSlug)
+    }
+
     // Update data sesuai request
-	exist.Slug = req.Slug
+	exist.Slug = animeSlug
 	exist.TitleRomaji = req.TitleRomaji
 	exist.TitleNative  = sql.NullString{String:req.TitleNative, Valid:true}
 	exist.TitleEnglish = sql.NullString{String:req.TitleEnglish, Valid:true}
@@ -193,7 +198,7 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
 	exist.ScoreAvg = req.ScoreAvg
 	exist.AltTitles = req.AltTitles
 	exist.ExternalIDs = req.ExternalIDs
-	exist.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	// exist.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	exist.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
     // Simpan perubahan

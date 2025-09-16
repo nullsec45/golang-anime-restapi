@@ -72,7 +72,6 @@ func (ags AnimeGenreService) Create(ctx context.Context, req dto.CreateAnimeGenr
 		Slug:animeSlug,
 		Name:req.Name,
 		CreatedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
     }
 
 	return ags.animeGenreRepository.Save(ctx, &anime)
@@ -97,7 +96,6 @@ func (ags AnimeGenreService) Update(ctx context.Context, req dto.UpdateAnimeGenr
 
 	exist.Slug = animeSlug	
 	exist.Name=req.Name
-	exist.CreatedAt = sql.NullTime{Time: time.Now(), Valid: false}
 	exist.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	return ags.animeGenreRepository.Update(ctx, &exist)

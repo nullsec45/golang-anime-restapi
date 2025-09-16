@@ -49,16 +49,7 @@ func (as AnimeEpisodeService) Create(ctx context.Context, req dto.CreateAnimeEpi
 		DurationMinutes: req.DurationMinutes,
 		IsSpecial:       req.IsSpecial,
 		CreatedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
 	}
-
-	// if as.episodeRepository.ExistsByAnimeAndNumber != nil {
-	// 	if exists, err := as.episodeRepository.ExistsByAnimeAndNumber(ctx, req.AnimeId, req.Number); err != nil {
-	// 		return err
-	// 	} else if exists {
-	// 		return domain.EpisodeNumberAlreadyExists
-	// 	}
-	// }
 
 	return as.animeEpisodeRepository.Save(ctx, &ep)
 }
