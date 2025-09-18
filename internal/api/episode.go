@@ -8,8 +8,6 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
-	// "fmt"
-	// "encoding/json"
 )
 
 type EpisodeAPI struct {
@@ -27,40 +25,12 @@ func NewAnimeEpisode(
 
 	episode := app.Group("/episodes", authMiddleware)
 
-	// episode.Get("", epAPI.Index)
 	episode.Post("/", epAPI.Create)
 	// episode.Put(":id", epAPI.Update)
 	episode.Delete("anime/:animeId", epAPI.DeleteByAnimeId)
 	episode.Delete(":id", epAPI.DeleteById)
 	// episode.Get(":id", epAPI.Show)
 }
-
-// func (epa EpisodeAPI) Index(ctx *fiber.Ctx) error {
-// 	an, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
-// 	defer cancel()
-
-// 	res, err := epa.animeEpisodeService.Index(an)
-
-// 	if err != nil {
-// 		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
-// 	}
-
-// 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data",res))
-// }
-
-// func (epa EpisodeAPI) Show (ctx *fiber.Ctx) error {
-// 	an, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
-// 	defer cancel()
-
-// 	id := ctx.Params("id")
-// 	res, err := epa.animeEpisodeService.Show(an, id)
-
-// 	if err != nil {
-// 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
-// 	}
-
-// 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data", res))
-// }
 
 func (epa EpisodeAPI) Create (ctx *fiber.Ctx) error {
 	an, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)

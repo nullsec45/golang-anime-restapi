@@ -32,5 +32,4 @@ type AnimeEpisodeService interface {
 	Create(ctx context.Context, req dto.CreateAnimeEpisodeRequest) error
 	DeleteByAnimeId(ctx context.Context, animeId string) error
 	DeleteById(ctx context.Context, id string) error
-	// Delete(ctx context.Context, req dto.DeleteAnimeEpisodeRequest) error
 }

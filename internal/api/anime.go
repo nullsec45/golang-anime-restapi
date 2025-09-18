@@ -101,7 +101,7 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed created data", map[string]string{
+			dto.CreateResponseErrorData("Failed updated data", map[string]string{
 				"body": err.Error(),
 			}),
 		)

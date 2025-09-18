@@ -22,7 +22,7 @@ func main(){
 		jwtMid.Config{
 			SigningKey:jwtMid.SigningKey{Key:[]byte(conf.Jwt.Key)},
 			ErrorHandler:func (ctx *fiber.Ctx, err error) error {
-				return ctx.Status(http.StatusUnauthorized).JSON(dto.CreateResponseError("Endpoint perlu token, silahkan login terlebih dahulu."))
+				return ctx.Status(http.StatusUnauthorized).JSON(dto.CreateResponseError("Unauthenticated, please login!."))
 			},
 		},
 	)
@@ -31,18 +31,21 @@ func main(){
 	animeRepository := repository.NewAnime(dbConnection)
 	animeEpisodeRepository := repository.NewAnimeEpisode(dbConnection)
 	animeGenreRepository := repository.NewAnimeGenre(dbConnection)
+	animeGenresRepository := repository.NewAnimeGenres(dbConnection)
 
 
 	authService := service.NewAuth(conf, userRepository)
 	animeService := service.NewAnime(animeRepository, animeEpisodeRepository)
 	animeEpisodeService := service.NewAnimeEpisode(animeRepository, animeEpisodeRepository)
 	animeGenreService := service.NewAnimeGenre(animeGenreRepository)
+	animeGenresService := service.NewAnimeGenres(animeRepository, animeGenreRepository, animeGenresRepository)
 
 	v1 := fiber.New()
 	api.NewAuth(v1, authService)
 	api.NewAnime(v1, animeService, authMiddleware)
 	api.NewAnimeEpisode(v1, animeEpisodeService, authMiddleware)
 	api.NewAnimeGenre(v1, animeGenreService, authMiddleware)
+	api.NewAnimeGenres(v1, animeGenresService, authMiddleware)
 	
 	app.Mount("/v1", v1)
 

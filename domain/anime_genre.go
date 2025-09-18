@@ -15,6 +15,8 @@ type AnimeGenres struct {
 }
 
 type AnimeGenresRepository interface {
+	FindById(ctx context.Context,  id string) (AnimeGenres, error)
+	FindByAnimeAndGenreId(ctx context.Context,  animeId string, genreId string) (AnimeGenres, error)
 	Save(ctx context.Context, data *AnimeGenres) error
 	Update(ctx context.Context, data *AnimeGenres) error
 	DeleteByAnimeId(ctx context.Context, animeId string) error
@@ -24,7 +26,7 @@ type AnimeGenresRepository interface {
 
 type AnimeGenresService interface {
 	Create(ctx context.Context, req dto.CreateAnimeGenresRequest) error
-	Update(ctx context.Context, req dto.CreateAnimeGenresRequest) error
+	Update(ctx context.Context, req dto.UpdateAnimeGenresRequest) error
 	DeleteByAnimeId(ctx context.Context, animeId string) error
 	DeleteByGenreId(ctx context.Context, id string) error
 	DeleteById(ctx context.Context, id string) error
