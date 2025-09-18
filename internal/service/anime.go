@@ -8,7 +8,6 @@ import(
 	"github.com/google/uuid"
 	"database/sql"
 	"time"
-	"errors"
 	"github.com/gosimple/slug"
 	"fmt"
 )
@@ -160,11 +159,10 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
 }
 
 func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  error {
-    // Cari data anime
     exist, err := as.animeRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return errors.New("Data anime not found!.")
+        return domain.AnimeNotFound
     }
     
     if err != nil {
@@ -243,7 +241,7 @@ func (as AnimeService) Delete (ctx context.Context, id string) error {
     exist, err := as.animeRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  errors.New("Data anime tidak ditemukan!.")
+        return  domain.AnimeNotFound
     }
     
     if err != nil {
