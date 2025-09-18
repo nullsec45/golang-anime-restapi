@@ -8,7 +8,6 @@ import (
 	"time"
 	"net/http"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
-	// "fmt"
 )
 
 type AnimeGenreAPI struct {
@@ -53,8 +52,13 @@ func (anmGA AnimeGenreAPI) Create (ctx *fiber.Ctx) error {
 	var req dto.CreateAnimeGenreRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.SendStatus(http.StatusUnprocessableEntity)
+		return ctx.Status(http.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData("Failed created data", map[string]string{
+				"body": err.Error(),
+			}),
+		)
 	}
+
 	fails := utility.Validate(req)
 	
 	if len(fails) > 0{
@@ -80,8 +84,13 @@ func (anmGA AnimeGenreAPI) Update (ctx *fiber.Ctx) error {
 	var req dto.UpdateAnimeGenreRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.SendStatus(http.StatusUnprocessableEntity)
+		return ctx.Status(http.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData("Failed updated data", map[string]string{
+				"body": err.Error(),
+			}),
+		)
 	}
+
 	fails := utility.Validate(req)
 	
 	if len(fails) > 0{
