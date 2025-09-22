@@ -55,7 +55,7 @@ func (ags AnimeGenreService) Show (ctx context.Context, id string) (dto.AnimeGen
 
     return dto.AnimeGenreData{
 		Id:exist.Id,
-		Slug:exist.Id,
+		Slug:exist.Slug,
 		Name:exist.Name,
 	}, nil
 }
