@@ -22,8 +22,8 @@ CREATE TABLE animes (
   score_avg    NUMERIC(3,2),                                   
   alt_titles   JSONB DEFAULT '{}'::jsonb,                      
   external_ids JSONB DEFAULT '{}'::jsonb,                      
-  created_at   TIMESTAMPTZ  NULL DEFAULT now(),
-  updated_at   TIMESTAMPTZ  NULL DEFAULT now(),
+  created_at   TIMESTAMPTZ  NULL DEFAULT NULL,
+  updated_at   TIMESTAMPTZ  NULL DEFAULT NULL,
   deleted_at   TIMESTAMPTZ  NULL 
 );
 
