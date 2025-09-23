@@ -3,11 +3,13 @@ package domain
 import "errors"
 
 var AnimeNotFound=errors.New("Anime not found!.")
-var AnimeEpisodeNotFound=errors.New("Anime episode not found!.")
-var AnimeGenreNotFound=errors.New("Anime genre not found!.")
-var AnimeGenresNotFound=errors.New("Anime genres not found!.")
-var AuthFail=errors.New("Authentication Failed!.")
+var AnimeEpisodeNotFound=errors.New("Anime Episode not found!.")
+var AnimeGenreNotFound=errors.New("Anime Genre not found!.")
+var AnimeGenresNotFound=errors.New("Anime Genres not found!.")
+var AuthFail=errors.New("Authentication failed!.")
 var EmailRegister=errors.New("Email already register!.")
 var PasswordNotMatch=errors.New("Password and Confirm Password not matching!.")
 var AnimeGenresAlready=errors.New("Anime Genres already in database!")
-var AnimeTagNotFound=errors.New("Anime tag not found!.")
+var AnimeTagNotFound=errors.New("Anime Tag not found!.")
+var AnimeTagsAlready=errors.New("Anime Tags already in database!.")
+var AnimeTagsNotFound=errors.New("Anime Tags not found!.")
