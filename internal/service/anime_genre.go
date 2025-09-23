@@ -48,21 +48,17 @@ func (agrs AnimeGenresService) Create(ctx context.Context, req dto.CreateAnimeGe
 		return errGenre
 	}
 
-	animeGenres, errAnimeGenres := agrs.animeGenresRepository.FindByAnimeAndGenreId(ctx, req.AnimeId, req.GenreId)
+	_, found, errAnimeGenres := agrs.animeGenresRepository.FindByAnimeAndGenreId(ctx, req.AnimeId, req.GenreId)
 
 
 	if errAnimeGenres != nil {
 		return errAnimeGenres
 	}
 
-	if animeGenres.AnimeId != "" {
+	if found {
 		return domain.AnimeGenresAlready
 	}	
-		// fmt.Println(animeGenres)	
 
-
-
-	
  	ag := domain.AnimeGenres{
 		Id:        uuid.NewString(),
 		AnimeId:   req.AnimeId,
@@ -104,6 +100,17 @@ func (agrs AnimeGenresService) Update(ctx context.Context, req dto.UpdateAnimeGe
 	if errGenre != nil {
 		return err
 	}
+
+	_, found, errAnimeGenres := agrs.animeGenresRepository.FindByAnimeAndGenreId(ctx, req.AnimeId, req.GenreId)
+
+	if errAnimeGenres != nil {
+		return errAnimeGenres
+	}
+
+	if found {
+		return domain.AnimeGenresAlready
+	}	
+
 
 	exist.AnimeId = req.AnimeId
 	exist.GenreId = req.GenreId

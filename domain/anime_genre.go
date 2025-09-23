@@ -16,7 +16,7 @@ type AnimeGenres struct {
 
 type AnimeGenresRepository interface {
 	FindById(ctx context.Context,  id string) (AnimeGenres, error)
-	FindByAnimeAndGenreId(ctx context.Context,  animeId string, genreId string) (AnimeGenres, error)
+	FindByAnimeAndGenreId(ctx context.Context,  animeId string, genreId string) (AnimeGenres, bool, error)
 	Save(ctx context.Context, data *AnimeGenres) error
 	Update(ctx context.Context, data *AnimeGenres) error
 	DeleteByAnimeId(ctx context.Context, animeId string) error

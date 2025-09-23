@@ -28,16 +28,13 @@ func (agrs *AnimeGenresRepository) FindById(ctx context.Context, id string) (res
 	return result, err
 }
 
-func (agrs *AnimeGenresRepository) FindByAnimeAndGenreId(ctx context.Context, animeId string, genreId string) (result domain.AnimeGenres, err error) {
+func (agrs *AnimeGenresRepository) FindByAnimeAndGenreId(ctx context.Context, animeId string, genreId string) (result domain.AnimeGenres, found bool, err error) {
 	dataset := agrs.db.From("anime_genres").Where(
 		goqu.C("anime_id").Eq(animeId),
 		goqu.C("genre_id").Eq(genreId),
 	)
-	found, err := dataset.ScanStructContext(ctx, &result)
-	if 	!found {
-		return result, sql.ErrNoRows
-	}
-	return result, err
+	found, err = dataset.ScanStructContext(ctx, &result)
+	return
 }
 
 
