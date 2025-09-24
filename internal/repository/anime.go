@@ -6,6 +6,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"context"
 	"time"
+	"fmt"
 )
 
 type AnimeRepository struct {
@@ -26,13 +27,23 @@ func (ar *AnimeRepository) FindAll(ctx context.Context) (result []domain.Anime, 
 
 func (ar *AnimeRepository) FindById(ctx context.Context, id string) (result domain.Anime, err error) {
 	dataset := ar.db.From("animes").Where(
-		goqu.C("id").Eq(id),
-		goqu.C("deleted_at").IsNull(),
+		goqu.I("animes.id").Eq(id),															
+		goqu.I("animes.deleted_at").IsNull(),
 	)
-	found, err := dataset.ScanStructContext(ctx, &result)
-	if 	!found {
+
+	found, scanErr := dataset.ScanStructContext(ctx, &result)
+
+	sqlStr, args, _ := dataset.ToSQL()
+    fmt.Println(sqlStr, args)
+	
+	if scanErr != nil {
+		return result, scanErr
+	}
+
+	if !found {
 		return result, sql.ErrNoRows
 	}
+
 	return result, err
 }
 

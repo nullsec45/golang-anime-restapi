@@ -68,6 +68,8 @@ type AnimeData struct {
 type AnimeShowData struct {
 	AnimeData
 	Episodes []AnimeEpisodeData `json:"episodes"`
+	Genres   []AnimeGenreData   `json:"genres"`
+	Tags     []AnimeTagData     `json:"tags"`
 }
 
 func NewValidator() *validator.Validate {

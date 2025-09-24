@@ -15,15 +15,21 @@ import(
 type AnimeService struct {
 	animeRepository domain.AnimeRepository
 	animeEpisodeRepository domain.AnimeEpisodeRepository
+	animeGenreRepository domain.AnimeGenreRepository
+	animeTagRepository domain.AnimeTagRepository
 }
 
 func NewAnime(
 	animeRepository domain.AnimeRepository,
 	animeEpisodeRepository domain.AnimeEpisodeRepository,
+	animeGenreRepository domain.AnimeGenreRepository,
+	animeTagRepository domain.AnimeTagRepository,
 ) domain.AnimeService {
 	return &AnimeService{
 		animeRepository: animeRepository,
 		animeEpisodeRepository:animeEpisodeRepository,
+		animeGenreRepository:animeGenreRepository,
+		animeTagRepository:animeTagRepository,
 	}
 }
 
@@ -66,6 +72,7 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 
 func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData, error) {
     exist, err := as.animeRepository.FindById(ctx,id)
+	fmt.Println(err)
 
     if err != nil && exist.Id == "" {
         return dto.AnimeShowData{}, domain.AnimeNotFound
@@ -81,7 +88,7 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData,
 		return dto.AnimeShowData{}, err
 	}
 
-	episodesData := make([]dto.AnimeEpisodeData, 0)
+	episodesData := make([]dto.AnimeEpisodeData, 0, len(episodes))
 	for _, v := range episodes {
 		episodesData = append(episodesData, dto.AnimeEpisodeData{
 			Id:              v.Id,
@@ -95,6 +102,34 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData,
 			IsSpecial:       v.IsSpecial,
 		})
 	}
+
+	genres, err := as.animeGenreRepository.FindByAnimeId(ctx, exist.Id)
+	if err != nil { 
+		return dto.AnimeShowData{}, err 
+	}
+
+	genresData := make([]dto.AnimeGenreData,0, len(genres))
+	for _, g := range genres {
+		genresData = append(genresData, dto.AnimeGenreData{
+			Id:g.Id,
+			Slug:g.Slug,			
+			Name:g.Name,
+		})
+	} 
+
+	tags, err := as.animeTagRepository.FindByAnimeId(ctx, exist.Id)
+	if err != nil { 
+		return dto.AnimeShowData{}, err 
+	}
+	
+	tagsData := make([]dto.AnimeTagData,0, len(tags))
+	for _, t := range tags {
+		tagsData = append(tagsData, dto.AnimeTagData{
+			Id:t.Id,
+			Slug:t.Slug,			
+			Name:t.Name,
+		})
+	} 
 
     return dto.AnimeShowData{
 		AnimeData:dto.AnimeData{
@@ -120,6 +155,8 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData,
 			ExternalIDs:            exist.ExternalIDs,   
 		},
 		Episodes:episodesData,
+		Genres:genresData,
+		Tags:tagsData,
     }, nil
 }
 
