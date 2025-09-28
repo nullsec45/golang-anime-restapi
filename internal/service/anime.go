@@ -4,32 +4,40 @@ import(
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"github.com/nullsec45/golang-anime-restapi/internal/config"
 	"context"
 	"github.com/google/uuid"
 	"database/sql"
 	"time"
 	"github.com/gosimple/slug"
 	"fmt"
+	"path"
 )
 
 type AnimeService struct {
+	config *config.Config
 	animeRepository domain.AnimeRepository
 	animeEpisodeRepository domain.AnimeEpisodeRepository
 	animeGenreRepository domain.AnimeGenreRepository
 	animeTagRepository domain.AnimeTagRepository
+	mediaRepository domain.MediaRepository
 }
 
 func NewAnime(
+	config *config.Config,
 	animeRepository domain.AnimeRepository,
 	animeEpisodeRepository domain.AnimeEpisodeRepository,
 	animeGenreRepository domain.AnimeGenreRepository,
 	animeTagRepository domain.AnimeTagRepository,
+	mediaRepository domain.MediaRepository,
 ) domain.AnimeService {
 	return &AnimeService{
+		config:config,
 		animeRepository: animeRepository,
 		animeEpisodeRepository:animeEpisodeRepository,
 		animeGenreRepository:animeGenreRepository,
 		animeTagRepository:animeTagRepository,
+		mediaRepository:mediaRepository,
 	}
 }
 
@@ -40,9 +48,32 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 		return nil, err
 	}
 
+	coverId := make([]string, 0)
+	for _, v := range animes {
+		if v.CoverId.Valid {
+			coverId = append(coverId, v.CoverId.String)
+		}
+	}
+
+	covers := make(map[string]string)
+
+	if len(coverId) > 0 {	
+		media, _ := as.mediaRepository.FindByIds(ctx, coverId)
+
+		for _, v := range media {
+			covers[v.Id] = path.Join(as.config.Server.Asset, v.Path)
+		}
+	}
+
 	var animeData []dto.AnimeData
 
 	for _, v:= range animes {
+		var coverUrl string
+
+		if v2, e := covers[v.CoverId.String]; e {
+			coverUrl = v2
+		}
+
 		animeData = append(animeData, dto.AnimeData{
 			Id:                     v.Id,
 			Slug:                   v.Slug,
@@ -63,7 +94,8 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 			Popularity:             v.Popularity,
 			ScoreAvg:               v.ScoreAvg,                 
 			AltTitles:              v.AltTitles,     
-			ExternalIDs:            v.ExternalIDs,       
+			ExternalIDs:            v.ExternalIDs,     
+			CoverUrl:			    coverUrl,  
 		})
 	}
 
@@ -131,6 +163,16 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData,
 		})
 	} 
 
+	var coverUrl string
+
+	if exist.CoverId.Valid {
+		cover, _ := as.mediaRepository.FindById(ctx, exist.CoverId.String)
+
+		if cover.Path != "" {
+			coverUrl = path.Join(as.config.Server.Asset, cover.Path)
+		}
+	}
+
     return dto.AnimeShowData{
 		AnimeData:dto.AnimeData{
 			Id:                     exist.Id,
@@ -152,7 +194,8 @@ func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData,
 			Popularity:             exist.Popularity,
 			ScoreAvg:               exist.ScoreAvg,                 
 			AltTitles:              exist.AltTitles,     
-			ExternalIDs:            exist.ExternalIDs,   
+			ExternalIDs:            exist.ExternalIDs, 
+			CoverUrl:               coverUrl,  
 		},
 		Episodes:episodesData,
 		Genres:genresData,
@@ -167,6 +210,12 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
         animeSlug = slug.Make(req.TitleRomaji) 
 		fmt.Println(animeSlug)
     }
+
+	coverId := sql.NullString{String:req.CoverId, Valid:false}
+
+	if req.CoverId != "" {
+		coverId.Valid = true 
+	}											
 	
  	anime := domain.Anime{
         Id: uuid.New().String(),
@@ -213,6 +262,12 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
 		fmt.Println(animeSlug)
     }
 
+	coverId := sql.NullString{String:req.CoverId, Valid:false}
+
+	if req.CoverId != "" {
+		coverId.Valid = true 
+	}			
+
     // Update data sesuai request
 	exist.Slug = animeSlug
 	exist.TitleRomaji = req.TitleRomaji
@@ -233,8 +288,8 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
 	exist.ScoreAvg = req.ScoreAvg
 	exist.AltTitles = req.AltTitles
 	exist.ExternalIDs = req.ExternalIDs
-	// exist.CreatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 	exist.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+	exist.CoverId = coverId
 
     // Simpan perubahan
     // err = as.animeRepository.Update(ctx, &exist)

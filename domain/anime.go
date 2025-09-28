@@ -27,6 +27,7 @@ type Anime struct {
 	ScoreAvg               float32                `db:"score_avg"`
 	AltTitles              dto.AltTitles          `db:"alt_titles"`  
 	ExternalIDs            dto.ExternalIDs        `db:"external_ids"`
+	CoverId    	   		   sql.NullString         `db:"cover_id"`
 	CreatedAt              sql.NullTime           `db:"created_at"`
 	UpdatedAt              sql.NullTime           `db:"updated_at"`
 }
