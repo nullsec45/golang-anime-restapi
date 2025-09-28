@@ -14,7 +14,7 @@ type Media struct {
 
 type MediaRepository interface {
 	FindById(ctx context.Context, id string) (Media, error)
-	// FindByIds(ctx context.Context, ids []string)([]Media, error)
+	FindByIds(ctx context.Context, ids []string)([]Media, error)
 	Save(ctx context.Context, media *Media) error
 	Delete(ctx context.Context, id string) error
 }

@@ -26,11 +26,11 @@ func (m MediaRepository) FindById(ctx context.Context, id string) (media domain.
 	return
 }
 
-// func (m MediaRepository) FindByIds(ctx context.Context, ids []string) (medias []domain.Media, err error){
-// 	dataset := m.db.From("media").Where(goqu.C("id").In(ids))
-// 	err = dataset.ScanStructsContext(ctx, &medias)
-// 	return
-// }
+func (m MediaRepository) FindByIds(ctx context.Context, ids []string) (medias []domain.Media, err error){
+	dataset := m.db.From("media").Where(goqu.C("id").In(ids))
+	err = dataset.ScanStructsContext(ctx, &medias)
+	return
+}
 
 func (m MediaRepository) Save(ctx context.Context, media *domain.Media) error {
 	executor := m.db.Insert("media").Rows(media).Executor()

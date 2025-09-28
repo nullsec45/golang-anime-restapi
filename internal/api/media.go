@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"path/filepath"
 	"github.com/gofiber/fiber/v2"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 )
 
 type MediaAPI struct {
@@ -36,6 +37,7 @@ func NewMedia(
 }
 
 func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
+
 	if ma.mediaService == nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError("mediaService is not initialized"))
 	}
@@ -48,9 +50,29 @@ func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
+	allowed := []string{".jpg",".jpeg",".png"}
+	const maxMB=20
+	const maxBytes=maxMB * 1024 * 1024
+
 	file, err := ctx.FormFile("media")
 	if err != nil {
 		return ctx.SendStatus(http.StatusBadRequest)
+	}
+
+	if file == nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData("Validation failed", map[string]string{
+				"media": "File 'Media' files are required to be uploaded.",
+			}),
+		)
+	}
+
+	if vErr := utility.ValidateMediaFile(file, allowed, maxBytes); vErr != nil {
+		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(
+			dto.CreateResponseErrorData("Validation failed", map[string]string{
+				"media": vErr.Error(),
+			}),
+		)
 	}
 
 	filename := uuid.NewString() + file.Filename
@@ -61,13 +83,25 @@ func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
 	}
 
-	res, err :=	ma.mediaService.Create(c, dto.CreateMediaRequest{
-		Path:filename,
-	}) 
+	req := dto.CreateMediaRequest{	
+		Path: filename,
+	}
+
+	res, err :=	ma.mediaService.Create(c, req) 
 
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
 	}
+
+	fails := utility.Validate(req)
+	
+	if len(fails) > 0{
+		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			"Failed uploaded media",
+			fails,
+		))
+	}
+
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccessWithData("Successfullly Create Media",res))
 }
@@ -77,6 +111,7 @@ func (ma MediaAPI) Delete (ctx *fiber.Ctx) error {
 	defer cancel()
 
 	id := ctx.Params("id")
+
 	err := ma.mediaService.Delete(an, id)
 
 	if err != nil {
