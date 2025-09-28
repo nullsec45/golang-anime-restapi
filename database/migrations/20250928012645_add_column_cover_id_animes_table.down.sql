@@ -1,0 +1,5 @@
+ALTER TABLE animes
+DROP CONSTRAINT IF EXISTS animes_cover_id_fkey;
+
+ALTER TABLE animes
+DROP COLUMN IF EXISTS cover_id;
