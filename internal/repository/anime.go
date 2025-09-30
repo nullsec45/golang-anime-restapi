@@ -7,7 +7,13 @@ import (
 	"context"
 	"time"
 	"fmt"
+	"strings"
 )
+
+type animeWithTotal struct {
+	domain.Anime
+	TotalCount int64 `db:"total_count"`
+}
 
 type AnimeRepository struct {
 	db *goqu.Database
@@ -19,9 +25,81 @@ func NewAnime(conf *sql.DB) (domain.AnimeRepository){
 	}
 }
 
-func (ar *AnimeRepository) FindAll(ctx context.Context) (result []domain.Anime, err error) {
-	dataset := ar.db.From("animes").Where(goqu.C("deleted_at").IsNull())
-	err = dataset.ScanStructsContext(ctx, &result)
+func (ar *AnimeRepository) FindAll(ctx context.Context, opts domain.AnimeListOptions) (items []domain.Anime, total int64, err error) {
+	q := opts.Pagination
+    q.Normalize(1, 10, 100)
+	limit, offset := q.LimitOffset()
+
+	uLimit := uint(limit)
+	uOffset := uint(offset)
+
+	dataset := ar.db.From("animes").
+					Where(goqu.C("deleted_at").IsNull()).
+					Select(
+						goqu.I("animes.id"),
+						goqu.I("animes.slug"),
+						goqu.I("animes.title_romaji"),
+						goqu.I("animes.title_native"),
+						goqu.I("animes.title_english"),
+						goqu.I("animes.synopsis"),
+						goqu.I("animes.type"),
+						goqu.I("animes.season"),
+						goqu.I("animes.season_year"),
+						goqu.I("animes.status"),
+						goqu.I("animes.age_rating"),
+						goqu.I("animes.total_episodes"),
+						goqu.I("animes.average_duration_minutes"),
+						goqu.I("animes.country"),
+						goqu.I("animes.premiered_at"),
+						goqu.I("animes.ended_at"),
+						goqu.I("animes.popularity"),
+						goqu.I("animes.score_avg"),
+						goqu.I("animes.alt_titles"),
+						goqu.I("animes.external_ids"),
+						goqu.I("animes.cover_id"),
+						goqu.I("animes.created_at"),
+						goqu.I("animes.updated_at"),
+						// TIDAK pilih deleted_at
+						goqu.L("COUNT(*) OVER()").As("total_count"),
+					)
+	
+    if s := opts.Filter.Search; s != "" {
+        pat := "%" + s + "%"
+        dataset = dataset.Where(goqu.Or(
+            goqu.I("title_romaji").ILike(pat),
+            goqu.I("title_english").ILike(pat),
+            goqu.I("title_native").ILike(pat),
+        ))
+    }
+
+	switch opts.Pagination.Sort {
+		case "title_romaji", "created_at", "popularity", "score_avg", "season_year":
+			if strings.ToLower(opts.Pagination.Order) == "asc" {
+				dataset = dataset.Order(goqu.I(opts.Pagination.Sort).Asc())
+			}else{
+				dataset = dataset.Order(goqu.I(opts.Pagination.Sort).Desc())
+			}
+		default:
+			dataset = dataset.Order(goqu.I("created_at").Desc())
+	}
+
+	dataset = dataset.Limit(uLimit).Offset(uOffset)
+
+	var rows []animeWithTotal
+	if err = dataset.ScanStructsContext(ctx, &rows); err != nil {
+		return nil, 0, err
+	}
+
+	if len(rows) > 0 {
+		total=rows[0].TotalCount
+	}
+
+	items = make([]domain.Anime, 0, len(rows))
+	for _, r := range rows {
+		items = append(items, r.Anime)
+	}
+
+	// err = dataset.ScanStructsContext(ctx, &result)
 	return
 }
 

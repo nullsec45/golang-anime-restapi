@@ -8,7 +8,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
-	// "fmt"
+	"fmt"
 	// "encoding/json"
 )
 
@@ -38,13 +38,28 @@ func (ana AnimeAPI) Index(ctx *fiber.Ctx) error {
 	an, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
-	res, err := ana.animeService.Index(an)
+	var q dto.PaginationQuery
+	if err := ctx.QueryParser(&q); err != nil {
+	fmt.Println(q)
+		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseError("invalid query params: " + err.Error()))
+	} 
+
+	q.Normalize(1, 10, 100)
+
+	opts := domain.AnimeListOptions{
+		Pagination: q,
+		Filter: domain.AnimeFilter{
+			Search: q.Search,
+		},
+	}
+
+	res, err := ana.animeService.Index(an, opts)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data",res))
+	return ctx.Status(200).JSON(dto.CreateResponseSuccessWithDataPagination("Successfully Get Data", res))
 }
 
 func (ana AnimeAPI) Show (ctx *fiber.Ctx) error {

@@ -41,15 +41,15 @@ func NewAnime(
 	}
 }
 
-func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
-	animes, err := as.animeRepository.FindAll(ctx)
+func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) (dto.Paginated[dto.AnimeData], error) {
+	items, total, err := as.animeRepository.FindAll(ctx, opts)
 
 	if err != nil {
-		return nil, err
+		return dto.Paginated[dto.AnimeData]{}, err
 	}
 
 	coverId := make([]string, 0)
-	for _, v := range animes {
+	for _, v := range items {
 		if v.CoverId.Valid {
 			coverId = append(coverId, v.CoverId.String)
 		}
@@ -67,7 +67,7 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 
 	var animeData []dto.AnimeData
 
-	for _, v:= range animes {
+	for _, v:= range items {
 		var coverUrl string
 
 		if v2, e := covers[v.CoverId.String]; e {
@@ -99,7 +99,10 @@ func (as AnimeService) Index(ctx context.Context) ([]dto.AnimeData, error) {
 		})
 	}
 
-	return animeData, nil
+	return dto.Paginated[dto.AnimeData]{
+		Data: animeData,
+		Meta:opts.Pagination.BuildMeta(total),
+	}, nil
 }
 
 func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData, error) {

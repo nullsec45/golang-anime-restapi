@@ -63,7 +63,6 @@ type AnimeData struct {
 	AltTitles              AltTitles               `json:"alt_titles"`  
 	ExternalIDs            ExternalIDs             `json:"external_ids"`
 	CoverUrl               string                  `json:"cover_url"`
-
 }
 
 

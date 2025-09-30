@@ -6,6 +6,16 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/dto"
 )
 
+type AnimeFilter struct {
+	Search string
+}
+
+type AnimeListOptions struct {
+	Pagination dto.PaginationQuery
+	Filter     AnimeFilter
+}
+
+
 type Anime struct {
 	Id                     string                 `db:"id"`
 	Slug                   string                 `db:"slug"`
@@ -33,7 +43,7 @@ type Anime struct {
 }
 
 type AnimeRepository interface {
-	FindAll(ctx context.Context) ([]Anime, error)
+	FindAll(ctx context.Context, opts AnimeListOptions) ([]Anime, int64, error)
 	FindById(ctx context.Context, id string) (Anime, error)
 	Save(ctx context.Context, anime *Anime) error
 	Update(ctx context.Context, anime *Anime) error
@@ -41,7 +51,7 @@ type AnimeRepository interface {
 }
 
 type AnimeService interface {
-	Index(ctx context.Context) ([]dto.AnimeData, error)
+	Index(ctx context.Context, opts AnimeListOptions) (dto.Paginated[dto.AnimeData], error)
 	Show(ctx context.Context, id string) (dto.AnimeShowData, error)
 	Create(ctx context.Context, req dto.CreateAnimeRequest) error
 	Update(ctx context.Context, req dto.UpdateAnimeRequest) error
