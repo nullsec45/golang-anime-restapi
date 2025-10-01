@@ -3,7 +3,7 @@ package dto
 type ResponseSuccess[T any] struct {
 	Code    int         `json:"code"`	
 	Message string      `json:"message"`
-	Data    T 		`json:"data,omitempty"`
+	Data    *T 		    `json:"data,omitempty"`
 	Meta    *PageMeta	`json:"meta,omitempty"`
 }
 
@@ -41,7 +41,7 @@ func CreateResponseSuccessWithData[T any](message string, data T) ResponseSucces
 	return ResponseSuccess[T]{
 		Code : 200,
 		Message: message,	
-		Data: data,
+		Data: &data,
 	}
 }
 
@@ -49,7 +49,7 @@ func CreateResponseSuccessWithDataPagination[T any](message string, p Paginated[
 	return ResponseSuccess[[]T]{
 		Code:    200,
 		Message: message,
-		Data:    p.Data,  
+		Data:    &p.Data,  
 		Meta:    &p.Meta,
 	}
 }
