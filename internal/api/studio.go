@@ -10,46 +10,51 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 )
 
-type AnimeGenreAPI struct {
-	animeGenreService domain.AnimeGenreService
+type AnimeStudioAPI struct {
+	animeStudioService domain.AnimeStudioService
 }
 
-func NewAnimeGenre(
+func NewAnimeStudio(
 	app * fiber.App, 
-	animeGenreService domain.AnimeGenreService,
+	animeStudioService domain.AnimeStudioService,
 	authMiddleware fiber.Handler,
 ) {
-	anmGA := AnimeGenreAPI{
-		animeGenreService: animeGenreService,
+	anmSA := AnimeStudioAPI{
+		animeStudioService: animeStudioService,
 	}
 
-	genre := app.Group("/genres", authMiddleware)
+	studio := app.Group("/studios", authMiddleware)
 
-	genre.Get("", anmGA.Index)
-	genre.Post("", anmGA.Create)
-	genre.Put(":id", anmGA.Update)
-	genre.Delete(":id", anmGA.Delete)
-	genre.Get(":id", anmGA.Show)
+	studio.Get("", anmSA.Index)
+	studio.Post("", anmSA.Create)
+	studio.Put(":id", anmSA.Update)
+	studio.Delete(":id", anmSA.Delete)
+	studio.Get(":id", anmSA.Show)
 }
 
-func (anmGA AnimeGenreAPI) Index(ctx *fiber.Ctx) error {
+func (anmSA AnimeStudioAPI) Index(ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
-	res, err := anmGA.animeGenreService.Index(c)
+	res, err := anmSA.animeStudioService.Index(c)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
 	}
 
+	if len(res) == 0 {
+		empty := []dto.AnimeStudioData{}
+		return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Data studios is empty", &empty))
+	}
+
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data",res))
 }
 
-func (anmGA AnimeGenreAPI) Create (ctx *fiber.Ctx) error {
+func (anmSA AnimeStudioAPI) Create (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
-	var req dto.CreateAnimeGenreRequest
+	var req dto.CreateAnimeStudioRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
@@ -68,20 +73,20 @@ func (anmGA AnimeGenreAPI) Create (ctx *fiber.Ctx) error {
 		))
 	}
 
-	err := anmGA.animeGenreService.Create(c, req)
+	err := anmSA.animeStudioService.Create(c, req)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseError(err.Error()))
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccess("Successfully created data."))
 }
 
-func (anmGA AnimeGenreAPI) Update (ctx *fiber.Ctx) error {
+func (anmSA AnimeStudioAPI) Update (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
 
-	var req dto.UpdateAnimeGenreRequest
+	var req dto.UpdateAnimeStudioRequest
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
@@ -101,7 +106,7 @@ func (anmGA AnimeGenreAPI) Update (ctx *fiber.Ctx) error {
 	}
 
 	req.Id=ctx.Params("id")
-	err := anmGA.animeGenreService.Update(c,req)
+	err := anmSA.animeStudioService.Update(c,req)
 	
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
@@ -110,12 +115,12 @@ func (anmGA AnimeGenreAPI) Update (ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
 }
 
-func (anmGA AnimeGenreAPI) Delete (ctx *fiber.Ctx) error {
+func (anmSA AnimeStudioAPI) Delete (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
 	id := ctx.Params("id")
-	err := anmGA.animeGenreService.Delete(c, id)
+	err := anmSA.animeStudioService.Delete(c, id)
 
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
@@ -124,12 +129,12 @@ func (anmGA AnimeGenreAPI) Delete (ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
 }
 
-func (anmGA AnimeGenreAPI) Show (ctx *fiber.Ctx) error {
+func (anmSA AnimeStudioAPI) Show (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
 	id := ctx.Params("id")
-	res, err := anmGA.animeGenreService.Show(c, id)
+	res, err := anmSA.animeStudioService.Show(c, id)
 
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))

@@ -35,6 +35,7 @@ func main(){
 	animeTagRepository := repository.NewAnimeTag(dbConnection)
 	animeTagsRepository := repository.NewAnimeTags(dbConnection)
 	mediaRepository := repository.NewMedia(dbConnection)
+	animeStudioRepository := repository.NewAnimeStudio(dbConnection)
 
 	authService := service.NewAuth(conf, userRepository)
 	animeService := service.NewAnime(conf, animeRepository, animeEpisodeRepository, animeGenreRepository, animeTagRepository, mediaRepository)
@@ -44,6 +45,7 @@ func main(){
 	animeTagService :=  service.NewAnimeTag(animeTagRepository)
 	animeTagsService := service.NewAnimeTags(animeRepository, animeTagRepository, animeTagsRepository)
 	mediaService := service.NewMedia(conf, mediaRepository)
+	animeStudioService := service.NewAnimeStudio(animeStudioRepository)
 
 	v1 := fiber.New()
 	api.NewAuth(v1, authService)
@@ -54,6 +56,7 @@ func main(){
 	api.NewAnimeTag(v1, animeTagService, authMiddleware)
 	api.NewAnimeTags(v1, animeTagsService, authMiddleware)
 	api.NewMedia(app, conf, mediaService, authMiddleware)
+	api.NewAnimeStudio(v1, animeStudioService, authMiddleware)
 	
 	app.Mount("/v1", v1)
 
