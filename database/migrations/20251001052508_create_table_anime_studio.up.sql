@@ -1,8 +1,11 @@
 CREATE TABLE IF NOT EXISTS anime_studios (
+  id        UUID DEFAULT gen_random_uuid() NOT NULL,
   anime_id  UUID NOT NULL REFERENCES animes(id) ON DELETE CASCADE ON UPDATE CASCADE,
   studio_id UUID NOT NULL REFERENCES studios(id) ON DELETE CASCADE ON UPDATE CASCADE,
   role      TEXT NOT NULL CHECK (role IN ('Animation','Producer','Licensor','Publisher')),
-  PRIMARY KEY (anime_id, studio_id, role)
+  created_at TIMESTAMPTZ  NULL DEFAULT NULL,
+  updated_at TIMESTAMPTZ  NULL DEFAULT NULL,
+  PRIMARY KEY (id, anime_id, studio_id)
 );
 
 CREATE OR REPLACE FUNCTION hard_delete_links_on_soft_delete()
