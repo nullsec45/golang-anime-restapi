@@ -41,7 +41,7 @@ func (asr *AnimeStudioRepository) FindByAnimeId(ctx context.Context, animeId str
 		From(goqu.T("studios")).
 		InnerJoin(
 			goqu.T("anime_studios"),
-			goqu.On(goqu.I("studios.id").Eq(goqu.I("anime_studios.genre_id"))),
+			goqu.On(goqu.I("studios.id").Eq(goqu.I("anime_studios.studio_id"))),
 		).
 		Select(goqu.I("studios.id"), goqu.I("studios.slug"), goqu.I("studios.name")). 
 		Where(goqu.I("anime_studios.anime_id").Eq(animeId)).
