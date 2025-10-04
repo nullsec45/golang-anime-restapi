@@ -4,6 +4,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"fmt"
 	"strings"
+	"github.com/google/uuid"
 )
 
 func Validate[T any](data T)map[string]string{
@@ -31,4 +32,9 @@ func TranslateTag(fd validator.FieldError) string {
 	}
 
 	return "validasi gagal"
+}
+
+func IsUUID(s string) bool {
+	_, err := uuid.Parse(s)
+	return err == nil
 }
