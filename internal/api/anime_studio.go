@@ -8,6 +8,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"errors"
 )
 
 type AnimeStudiosAPI struct {
@@ -40,7 +41,10 @@ func (asa AnimeStudiosAPI) Create (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed created data", map[string]string{
+			dto.CreateResponseErrorData(
+				http.StatusBadRequest,
+				"Failed created data", 
+				map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -50,6 +54,7 @@ func (asa AnimeStudiosAPI) Create (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed created data",
 			fails,
 		))
@@ -58,7 +63,7 @@ func (asa AnimeStudiosAPI) Create (ctx *fiber.Ctx) error {
 	err := asa.animeStudiosService.Create(ans, req)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccess("Successfully created data."))
@@ -72,7 +77,7 @@ func (asa AnimeStudiosAPI) Update (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed updated data", map[string]string{
+			dto.CreateResponseErrorData(http.StatusBadRequest, "Failed updated data", map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -82,6 +87,7 @@ func (asa AnimeStudiosAPI) Update (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed updated data",
 			fails,
 		))
@@ -89,9 +95,13 @@ func (asa AnimeStudiosAPI) Update (ctx *fiber.Ctx) error {
 
 	req.Id=ctx.Params("id")
 	err := asa.animeStudiosService.Update(ans, req)
+
+	if errors.Is(err, domain.AnimeStudiosNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
 	
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -105,8 +115,12 @@ func (asa AnimeStudiosAPI) DeleteByAnimeId (ctx *fiber.Ctx) error {
 	id := ctx.Params("animeId")
 	err := asa.animeStudiosService.DeleteByAnimeId(ans, id)
 
+	if errors.Is(err, domain.AnimeStudiosNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
@@ -119,8 +133,12 @@ func (asa AnimeStudiosAPI) DeleteByStudioId (ctx *fiber.Ctx) error {
 	id := ctx.Params("studioId")
 	err := asa.animeStudiosService.DeleteByStudioId(ans, id)
 
+	if errors.Is(err, domain.AnimeStudiosNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
@@ -133,8 +151,12 @@ func (asa AnimeStudiosAPI) DeleteById (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	err := asa.animeStudiosService.DeleteById(ans, id)
 
+	if errors.Is(err, domain.AnimeStudiosNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))

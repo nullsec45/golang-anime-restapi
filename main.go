@@ -22,7 +22,7 @@ func main(){
 		jwtMid.Config{
 			SigningKey:jwtMid.SigningKey{Key:[]byte(conf.Jwt.Key)},
 			ErrorHandler:func (ctx *fiber.Ctx, err error) error {
-				return ctx.Status(http.StatusUnauthorized).JSON(dto.CreateResponseError("Unauthenticated, please login!."))
+				return ctx.Status(http.StatusUnauthorized).JSON(dto.CreateResponseError(http.StatusUnauthorized, "Unauthenticated, please login!."))
 			},
 		},
 	)

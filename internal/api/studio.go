@@ -8,6 +8,7 @@ import (
 	"time"
 	"net/http"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"errors"
 )
 
 type AnimeStudioAPI struct {
@@ -39,7 +40,7 @@ func (anmSA AnimeStudioAPI) Index(ctx *fiber.Ctx) error {
 	res, err := anmSA.animeStudioService.Index(c)
 
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	if len(res) == 0 {
@@ -50,6 +51,24 @@ func (anmSA AnimeStudioAPI) Index(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data",res))
 }
 
+func (anmSA AnimeStudioAPI) Show (ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
+	defer cancel()
+
+	id := ctx.Params("id")
+	res, err := anmSA.animeStudioService.Show(c, id)
+
+	if errors.Is(err, domain.AnimeStudioNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data", res))
+}
+
 func (anmSA AnimeStudioAPI) Create (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
 	defer cancel()
@@ -58,7 +77,7 @@ func (anmSA AnimeStudioAPI) Create (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed created data", map[string]string{
+			dto.CreateResponseErrorData(http.StatusBadRequest, "Failed created data", map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -68,6 +87,7 @@ func (anmSA AnimeStudioAPI) Create (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed created data",
 			fails,
 		))
@@ -76,7 +96,7 @@ func (anmSA AnimeStudioAPI) Create (ctx *fiber.Ctx) error {
 	err := anmSA.animeStudioService.Create(c, req)
 
 	if err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseError(http.StatusBadRequest, err.Error()))
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccess("Successfully created data."))
@@ -90,7 +110,7 @@ func (anmSA AnimeStudioAPI) Update (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed updated data", map[string]string{
+			dto.CreateResponseErrorData(http.StatusBadRequest, "Failed updated data", map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -100,6 +120,7 @@ func (anmSA AnimeStudioAPI) Update (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed updated data",
 			fails,
 		))
@@ -108,8 +129,12 @@ func (anmSA AnimeStudioAPI) Update (ctx *fiber.Ctx) error {
 	req.Id=ctx.Params("id")
 	err := anmSA.animeStudioService.Update(c,req)
 	
+	if errors.Is(err, domain.AnimeStudioNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -122,23 +147,13 @@ func (anmSA AnimeStudioAPI) Delete (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	err := anmSA.animeStudioService.Delete(c, id)
 
+	if errors.Is(err, domain.AnimeStudioNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
-}
-
-func (anmSA AnimeStudioAPI) Show (ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
-	defer cancel()
-
-	id := ctx.Params("id")
-	res, err := anmSA.animeStudioService.Show(c, id)
-
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
-	}
-
-	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data", res))
 }

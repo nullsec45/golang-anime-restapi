@@ -8,6 +8,7 @@ import (
 	"time"
 	"net/http"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"errors"
 )
 
 type AnimeTagAPI struct {
@@ -39,10 +40,28 @@ func (anmTA AnimeTagAPI) Index(ctx *fiber.Ctx) error {
 	res, err := anmTA.animeTagService.Index(c)
 
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data",res))
+	return ctx.Status(http.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data",res))
+}
+
+func (anmTA AnimeTagAPI) Show (ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
+	defer cancel()
+
+	id := ctx.Params("id")
+	res, err := anmTA.animeTagService.Show(c, id)
+	
+	if errors.Is(err, domain.AnimeTagNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError,err.Error()))
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data", res))
 }
 
 func (anmTA AnimeTagAPI) Create (ctx *fiber.Ctx) error {
@@ -53,7 +72,7 @@ func (anmTA AnimeTagAPI) Create (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed created data", map[string]string{
+			dto.CreateResponseErrorData(http.StatusBadRequest,"Failed created data", map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -63,6 +82,7 @@ func (anmTA AnimeTagAPI) Create (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed created data",
 			fails,
 		))
@@ -71,7 +91,7 @@ func (anmTA AnimeTagAPI) Create (ctx *fiber.Ctx) error {
 	err := anmTA.animeTagService.Create(c, req)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError,err.Error()))
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccess("Successfully created data."))
@@ -85,7 +105,7 @@ func (anmTA AnimeTagAPI) Update (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed updated data", map[string]string{
+			dto.CreateResponseErrorData(http.StatusBadRequest,"Failed updated data", map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -95,6 +115,7 @@ func (anmTA AnimeTagAPI) Update (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed updated data",
 			fails,
 		))
@@ -102,9 +123,13 @@ func (anmTA AnimeTagAPI) Update (ctx *fiber.Ctx) error {
 
 	req.Id=ctx.Params("id")
 	err := anmTA.animeTagService.Update(c,req)
+
+	if errors.Is(err, domain.AnimeTagNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
 	
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError,err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -117,23 +142,13 @@ func (anmTA AnimeTagAPI) Delete (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	err := anmTA.animeTagService.Delete(c, id)
 
+	if errors.Is(err, domain.AnimeTagNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError,err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
-}
-
-func (anmTA AnimeTagAPI) Show (ctx *fiber.Ctx) error {
-	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
-	defer cancel()
-
-	id := ctx.Params("id")
-	res, err := anmTA.animeTagService.Show(c, id)
-
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
-	}
-
-	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data", res))
 }

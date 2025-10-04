@@ -8,6 +8,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"errors"
 )
 
 type AnimeGenresAPI struct {
@@ -40,7 +41,9 @@ func (aga AnimeGenresAPI) Create (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed created data", map[string]string{
+			dto.CreateResponseErrorData(
+				http.StatusBadRequest, 
+				"Failed created data", map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -50,6 +53,7 @@ func (aga AnimeGenresAPI) Create (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed created data",
 			fails,
 		))
@@ -58,7 +62,10 @@ func (aga AnimeGenresAPI) Create (ctx *fiber.Ctx) error {
 	err := aga.animeGenresService.Create(ang, req)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(
+			http.StatusInternalServerError,
+			err.Error(),
+		))
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccess("Successfully created data."))
@@ -72,9 +79,13 @@ func (aga AnimeGenresAPI) Update (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed updated data", map[string]string{
-				"body": err.Error(),
-			}),
+			dto.CreateResponseErrorData(
+				http.StatusBadRequest,
+				"Failed updated data",
+				map[string]string{
+					"body": err.Error(),
+				},
+			),
 		)
 	}
 
@@ -82,6 +93,7 @@ func (aga AnimeGenresAPI) Update (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed updated data",
 			fails,
 		))
@@ -89,9 +101,13 @@ func (aga AnimeGenresAPI) Update (ctx *fiber.Ctx) error {
 
 	req.Id=ctx.Params("id")
 	err := aga.animeGenresService.Update(ang, req)
+
+	if errors.Is(err, domain.AnimeGenresNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
 	
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -105,8 +121,12 @@ func (aga AnimeGenresAPI) DeleteByAnimeId (ctx *fiber.Ctx) error {
 	id := ctx.Params("animeId")
 	err := aga.animeGenresService.DeleteByAnimeId(ang, id)
 
+	if errors.Is(err, domain.AnimeGenresNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
@@ -119,8 +139,15 @@ func (aga AnimeGenresAPI) DeleteByGenreId (ctx *fiber.Ctx) error {
 	id := ctx.Params("genreId")
 	err := aga.animeGenresService.DeleteByGenreId(ang, id)
 
+	if errors.Is(err, domain.AnimeGenresNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(
+			http.StatusInternalServerError,
+			err.Error(),
+		))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
@@ -133,8 +160,15 @@ func (aga AnimeGenresAPI) DeleteById (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	err := aga.animeGenresService.DeleteById(ang, id)
 
+	if errors.Is(err, domain.AnimeGenresNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(
+			http.StatusInternalServerError,
+			err.Error(),
+		))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))

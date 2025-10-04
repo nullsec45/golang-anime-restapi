@@ -22,8 +22,15 @@ func (m MediaRepository) FindById(ctx context.Context, id string) (media domain.
 		"id":id,
 	})
 
-	_, err = dataset.ScanStructContext(ctx, &media)
-	return
+	found, err := dataset.ScanStructContext(ctx, &media)
+	if 	!found {
+		return media, sql.ErrNoRows
+	}
+	
+	return media, err
+
+	// _, err = dataset.ScanStructContext(ctx, &media)
+	// return
 }
 
 func (m MediaRepository) FindByIds(ctx context.Context, ids []string) (medias []domain.Media, err error){

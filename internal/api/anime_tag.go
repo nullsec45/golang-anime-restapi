@@ -8,6 +8,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"errors"
 )
 
 type AnimeTagsAPI struct {
@@ -40,9 +41,13 @@ func (ata AnimeTagsAPI) Create (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed created data", map[string]string{
-				"body": err.Error(),
-			}),
+			dto.CreateResponseErrorData(
+				http.StatusBadRequest, 
+				"Failed created data", 
+				map[string]string{
+					"body": err.Error(),
+				},
+			),
 		)
 	}
 	
@@ -50,6 +55,7 @@ func (ata AnimeTagsAPI) Create (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed created data",
 			fails,
 		))
@@ -58,7 +64,7 @@ func (ata AnimeTagsAPI) Create (ctx *fiber.Ctx) error {
 	err := ata.animeTagsService.Create(ant, req)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccess("Successfully created data."))
@@ -72,9 +78,13 @@ func (ata AnimeTagsAPI) Update (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed updated data", map[string]string{
-				"body": err.Error(),
-			}),
+			dto.CreateResponseErrorData(
+				http.StatusBadRequest, 
+				"Failed updated data", 
+				map[string]string{
+					"body": err.Error(),
+				},
+			),
 		)
 	}
 
@@ -82,6 +92,7 @@ func (ata AnimeTagsAPI) Update (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed updated data",
 			fails,
 		))
@@ -90,8 +101,12 @@ func (ata AnimeTagsAPI) Update (ctx *fiber.Ctx) error {
 	req.Id=ctx.Params("id")
 	err := ata.animeTagsService.Update(ant, req)
 	
+	if errors.Is(err, domain.AnimeTagsNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError,err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -105,8 +120,12 @@ func (ata AnimeTagsAPI) DeleteByAnimeId (ctx *fiber.Ctx) error {
 	id := ctx.Params("animeId")
 	err := ata.animeTagsService.DeleteByAnimeId(ant, id)
 
+	if errors.Is(err, domain.AnimeTagsNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
@@ -120,7 +139,7 @@ func (ata AnimeTagsAPI) DeleteByTagId (ctx *fiber.Ctx) error {
 	err := ata.animeTagsService.DeleteByTagId(ant, id)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
@@ -134,7 +153,7 @@ func (ata AnimeTagsAPI) DeleteById (ctx *fiber.Ctx) error {
 	err := ata.animeTagsService.DeleteById(ant, id)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))

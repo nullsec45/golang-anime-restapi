@@ -13,17 +13,17 @@ type ResponseError[T any] struct {
 	Error    interface{} `json:"error,omitempty"`
 }
 
-func CreateResponseError(message string) ResponseError [string]{
+func CreateResponseError(code int,message string) ResponseError [string]{
 	return ResponseError[string]{
-		Code : 400,
+		Code : code,
 		Message: message,	
 		// Error: "",
 	}
 }
 
-func CreateResponseErrorData(message string, error map[string]string) ResponseError [string]{
+func CreateResponseErrorData(code int, message string, error map[string]string) ResponseError [string]{
 	return ResponseError[string]{
-		Code : 422,
+		Code : code,
 		Message: message,	
 		Error: error,
 	}

@@ -107,7 +107,7 @@ func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) 
 
 func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData, error) {
     exist, err := as.animeRepository.FindById(ctx,id)
-	fmt.Println(err)
+	fmt.Println(err)	
 
     if err != nil && exist.Id == "" {
         return dto.AnimeShowData{}, domain.AnimeNotFound
@@ -218,6 +218,12 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
 
 	if req.CoverId != "" {
 		coverId.Valid = true 
+		
+		cover, err := as.mediaRepository.FindById(ctx, req.CoverId)
+
+		if err != nil && cover.Id == "" {
+       		return domain.AnimeMediaNotFound
+		} 
 	}											
 	
  	anime := domain.Anime{
@@ -267,8 +273,15 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
 
 	coverId := sql.NullString{String:req.CoverId, Valid:false}
 
+
 	if req.CoverId != "" {
 		coverId.Valid = true 
+
+		cover, err := as.mediaRepository.FindById(ctx, req.CoverId)
+
+		if err != nil && cover.Id == "" {
+       		return domain.AnimeMediaNotFound
+		} 
 	}			
 
     // Update data sesuai request

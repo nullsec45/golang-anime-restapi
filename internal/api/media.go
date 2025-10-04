@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"errors"
 )
 
 type MediaAPI struct {
@@ -39,12 +40,12 @@ func NewMedia(
 func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 
 	if ma.mediaService == nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError("mediaService is not initialized"))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, "mediaService is not initialized"))
 	}
 
 	if ma.config == nil || ma.config.Storage.BasePath == "" {
 		return ctx.Status(http.StatusInternalServerError).
-			JSON(dto.CreateResponseError("storage config is not initialized"))
+			JSON(dto.CreateResponseError(http.StatusInternalServerError, "storage config is not initialized"))
 	}
 
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
@@ -56,20 +57,21 @@ func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 
 	file, err := ctx.FormFile("media")
 	if err != nil {
-		return ctx.SendStatus(http.StatusBadRequest)
+		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseError(http.StatusBadRequest,err.Error()))
+		
 	}
 
 	if file == nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Validation failed", map[string]string{
+		return ctx.Status(http.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData(http.StatusBadRequest, "Validation failed", map[string]string{
 				"media": "File 'Media' files are required to be uploaded.",
 			}),
 		)
 	}
 
 	if vErr := utility.ValidateMediaFile(file, allowed, maxBytes); vErr != nil {
-		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(
-			dto.CreateResponseErrorData("Validation failed", map[string]string{
+		return ctx.Status(http.StatusUnprocessableEntity).JSON(
+			dto.CreateResponseErrorData(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
 				"media": vErr.Error(),
 			}),
 		)
@@ -80,7 +82,7 @@ func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 	err = ctx.SaveFile(file, path)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	req := dto.CreateMediaRequest{	
@@ -90,13 +92,14 @@ func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 	res, err :=	ma.mediaService.Create(c, req) 
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	fails := utility.Validate(req)
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed uploaded media",
 			fails,
 		))
@@ -114,8 +117,12 @@ func (ma MediaAPI) Delete (ctx *fiber.Ctx) error {
 
 	err := ma.mediaService.Delete(an, id)
 
+	if errors.Is(err, domain.AnimeMediaNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Media"))
