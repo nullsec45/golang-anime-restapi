@@ -9,6 +9,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 	"fmt"
+	"errors"
 	// "encoding/json"
 )
 
@@ -40,8 +41,7 @@ func (ana AnimeAPI) Index(ctx *fiber.Ctx) error {
 
 	var q dto.PaginationQuery
 	if err := ctx.QueryParser(&q); err != nil {
-	fmt.Println(q)
-		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseError("invalid query params: " + err.Error()))
+		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseError(http.StatusBadRequest, "invalid query params: " + err.Error()))
 	} 
 
 	q.Normalize(1, 10, 100)
@@ -56,7 +56,7 @@ func (ana AnimeAPI) Index(ctx *fiber.Ctx) error {
 	res, err := ana.animeService.Index(an, opts)
 
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(fiber.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(200).JSON(dto.CreateResponseSuccessWithDataPagination("Successfully Get Data", res))
@@ -68,9 +68,13 @@ func (ana AnimeAPI) Show (ctx *fiber.Ctx) error {
 
 	id := ctx.Params("id")
 	res, err := ana.animeService.Show(an, id)
+  	
+	if errors.Is(err, domain.AnimeNotFound) {
+            return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data", res))
@@ -84,7 +88,7 @@ func (ana AnimeAPI) Create (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed created data", map[string]string{
+			dto.CreateResponseErrorData(http.StatusBadRequest, "Failed created data", map[string]string{
 				"body": err.Error(),
 			}),
 		)
@@ -94,6 +98,7 @@ func (ana AnimeAPI) Create (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed created data",
 			fails,
 		))
@@ -102,7 +107,7 @@ func (ana AnimeAPI) Create (ctx *fiber.Ctx) error {
 	err := ana.animeService.Create(an, req)
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccess("Successfully created data."))
@@ -116,9 +121,13 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(
-			dto.CreateResponseErrorData("Failed updated data", map[string]string{
-				"body": err.Error(),
-			}),
+			dto.CreateResponseErrorData(
+				http.StatusBadRequest,
+				"Failed updated data", 
+				map[string]string{
+				 "body": err.Error(),
+				},
+			),
 		)
 	}
 
@@ -127,6 +136,7 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 	
 	if len(fails) > 0{
 		return ctx.Status(http.StatusBadRequest).JSON(dto.CreateResponseErrorData(
+			http.StatusBadRequest,
 			"Failed updated data",
 			fails,
 		))
@@ -134,9 +144,16 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 
 	req.Id=ctx.Params("id")
 	err := ana.animeService.Update(an,req)
+		
+	if errors.Is(err, domain.AnimeNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
 	
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(
+			http.StatusInternalServerError,
+			err.Error(),
+		))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -149,8 +166,15 @@ func (ana AnimeAPI) Delete (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	err := ana.animeService.Delete(an, id)
 
+	if errors.Is(err, domain.AnimeNotFound) {
+        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
+    }
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(err.Error()))
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(
+			http.StatusInternalServerError,
+			err.Error(),
+		))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
