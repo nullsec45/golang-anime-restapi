@@ -45,6 +45,7 @@ type Anime struct {
 type AnimeRepository interface {
 	FindAll(ctx context.Context, opts AnimeListOptions) ([]Anime, int64, error)
 	FindById(ctx context.Context, id string) (Anime, error)
+	FindBySlug(ctx context.Context, slug string) (Anime, error)
 	Save(ctx context.Context, anime *Anime) error
 	Update(ctx context.Context, anime *Anime) error
 	Delete(ctx context.Context, id string) error
@@ -52,7 +53,7 @@ type AnimeRepository interface {
 
 type AnimeService interface {
 	Index(ctx context.Context, opts AnimeListOptions) (dto.Paginated[dto.AnimeData], error)
-	Show(ctx context.Context, id string) (dto.AnimeShowData, error)
+	Show(ctx context.Context, param string) (dto.AnimeShowData, error)
 	Create(ctx context.Context, req dto.CreateAnimeRequest) error
 	Update(ctx context.Context, req dto.UpdateAnimeRequest) error
 	Delete(ctx context.Context, id string) error

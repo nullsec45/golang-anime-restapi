@@ -36,6 +36,25 @@ func (agr *AnimeGenreRepository) FindById(ctx context.Context, id string) (resul
 	return result, err
 }
 
+func (agr *AnimeGenreRepository) FindBySlug(ctx context.Context, slug string) (result domain.AnimeGenre, err error) {
+	dataset := agr.db.From("genres").Where(
+		goqu.I("genres.slug").Eq(slug),															
+		goqu.I("genres.deleted_at").IsNull(),
+	)
+
+	found, scanErr := dataset.ScanStructContext(ctx, &result)
+	
+	if scanErr != nil {
+		return result, scanErr
+	}
+
+	if !found {
+		return result, sql.ErrNoRows
+	}
+
+	return result, err
+}
+
 func (agr *AnimeGenreRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.AnimeGenre, error) {
 	ds := agr.db.
 		From(goqu.T("genres")).

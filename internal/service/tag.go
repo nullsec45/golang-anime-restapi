@@ -3,6 +3,7 @@ package service
 import(
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 	"context"
 	"github.com/google/uuid"
 	"database/sql"
@@ -42,8 +43,13 @@ func (ats AnimeTagService) Index(ctx context.Context) ([]dto.AnimeTagData, error
 	return animeTagData, nil
 }
 
-func (ats AnimeTagService) Show (ctx context.Context, id string) (dto.AnimeTagData, error) {
-    exist, err := ats.animeTagRepository.FindById(ctx,id)
+func (ats AnimeTagService) Show (ctx context.Context, param string) (dto.AnimeTagData, error) {
+   exist, err := func() (domain.AnimeTag, error) {
+		if utility.IsUUID(param) {
+			return ats.animeTagRepository.FindById(ctx, param)
+		}
+		return ats.animeTagRepository.FindBySlug(ctx, param)
+	}()
 
     if err != nil && exist.Id == "" {
         return dto.AnimeTagData{}, domain.AnimeTagNotFound

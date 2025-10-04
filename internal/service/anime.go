@@ -105,9 +105,14 @@ func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) 
 	}, nil
 }
 
-func (as AnimeService) Show (ctx context.Context, id string) (dto.AnimeShowData, error) {
-    exist, err := as.animeRepository.FindById(ctx,id)
-	fmt.Println(err)	
+func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowData, error) {
+	exist, err := func() (domain.Anime, error) {
+		if utility.IsUUID(param) {
+			return as.animeRepository.FindById(ctx, param)
+		}
+		return as.animeRepository.FindBySlug(ctx, param)
+	}()
+
 
     if err != nil && exist.Id == "" {
         return dto.AnimeShowData{}, domain.AnimeNotFound

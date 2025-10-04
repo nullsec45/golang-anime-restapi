@@ -36,6 +36,25 @@ func (asr *AnimeStudioRepository) FindById(ctx context.Context, id string) (resu
 	return result, err
 }
 
+func (asr *AnimeStudioRepository) FindBySlug(ctx context.Context, slug string) (result domain.AnimeStudio, err error) {
+	dataset := asr.db.From("studios").Where(
+		goqu.I("studios.slug").Eq(slug),															
+		goqu.I("studios.deleted_at").IsNull(),
+	)
+
+	found, scanErr := dataset.ScanStructContext(ctx, &result)
+	
+	if scanErr != nil {
+		return result, scanErr
+	}
+
+	if !found {
+		return result, sql.ErrNoRows
+	}
+
+	return result, err
+}
+
 func (asr *AnimeStudioRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.AnimeStudio, error) {
 	ds := asr.db.
 		From(goqu.T("studios")).

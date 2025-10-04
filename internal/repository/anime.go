@@ -6,7 +6,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"context"
 	"time"
-	"fmt"
+	// "fmt"
 	"strings"
 )
 
@@ -59,7 +59,6 @@ func (ar *AnimeRepository) FindAll(ctx context.Context, opts domain.AnimeListOpt
 						goqu.I("animes.cover_id"),
 						goqu.I("animes.created_at"),
 						goqu.I("animes.updated_at"),
-						// TIDAK pilih deleted_at
 						goqu.L("COUNT(*) OVER()").As("total_count"),
 					)
 	
@@ -110,9 +109,25 @@ func (ar *AnimeRepository) FindById(ctx context.Context, id string) (result doma
 	)
 
 	found, scanErr := dataset.ScanStructContext(ctx, &result)
+	
+	if scanErr != nil {
+		return result, scanErr
+	}
 
-	sqlStr, args, _ := dataset.ToSQL()
-    fmt.Println(sqlStr, args)
+	if !found {
+		return result, sql.ErrNoRows
+	}
+
+	return result, err
+}
+
+func (ar *AnimeRepository) FindBySlug(ctx context.Context, slug string) (result domain.Anime, err error) {
+	dataset := ar.db.From("animes").Where(
+		goqu.I("animes.slug").Eq(slug),															
+		goqu.I("animes.deleted_at").IsNull(),
+	)
+
+	found, scanErr := dataset.ScanStructContext(ctx, &result)
 	
 	if scanErr != nil {
 		return result, scanErr

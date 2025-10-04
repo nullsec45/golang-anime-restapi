@@ -36,6 +36,25 @@ func (atr *AnimeTagRepository) FindById(ctx context.Context, id string) (result 
 	return result, err
 }
 
+func (atr *AnimeTagRepository) FindBySlug(ctx context.Context, slug string) (result domain.AnimeTag, err error) {
+	dataset := atr.db.From("tags").Where(
+		goqu.I("tags.slug").Eq(slug),															
+		goqu.I("tags.deleted_at").IsNull(),
+	)
+
+	found, scanErr := dataset.ScanStructContext(ctx, &result)
+	
+	if scanErr != nil {
+		return result, scanErr
+	}
+
+	if !found {
+		return result, sql.ErrNoRows
+	}
+
+	return result, err
+}
+
 func (atr *AnimeTagRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.AnimeTag, error) {
 	ds := atr.db.
 		From(goqu.T("tags")).

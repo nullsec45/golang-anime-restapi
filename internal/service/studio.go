@@ -3,6 +3,7 @@ package service
 import(
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 	"context"
 	"github.com/google/uuid"
 	"database/sql"
@@ -44,8 +45,13 @@ func (ass AnimeStudioService) Index(ctx context.Context) ([]dto.AnimeStudioData,
 	return animeStudioData, nil
 }
 
-func (ass AnimeStudioService) Show (ctx context.Context, id string) (dto.AnimeStudioData, error) {
-    exist, err := ass.animeStudioRepository.FindById(ctx,id)
+func (ass AnimeStudioService) Show (ctx context.Context, param string) (dto.AnimeStudioData, error) {
+	exist, err := func() (domain.AnimeStudio, error) {
+		if utility.IsUUID(param) {
+			return ass.animeStudioRepository.FindById(ctx, param)
+		}
+		return ass.animeStudioRepository.FindBySlug(ctx, param)
+	}()
 
     if err != nil && exist.Id == "" {
         return dto.AnimeStudioData{}, domain.AnimeStudioNotFound

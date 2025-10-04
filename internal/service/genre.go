@@ -3,6 +3,7 @@ package service
 import(
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 	"context"
 	"github.com/google/uuid"
 	"database/sql"
@@ -42,8 +43,14 @@ func (ags AnimeGenreService) Index(ctx context.Context) ([]dto.AnimeGenreData, e
 	return animeGenreData, nil
 }
 
-func (ags AnimeGenreService) Show (ctx context.Context, id string) (dto.AnimeGenreData, error) {
-    exist, err := ags.animeGenreRepository.FindById(ctx,id)
+func (ags AnimeGenreService) Show (ctx context.Context, param string) (dto.AnimeGenreData, error) {
+	exist, err := func() (domain.AnimeGenre, error) {
+		if utility.IsUUID(param) {
+			return ags.animeGenreRepository.FindById(ctx, param)
+		}
+		return ags.animeGenreRepository.FindBySlug(ctx, param)
+	}()
+
 
     if err != nil && exist.Id == "" {
         return dto.AnimeGenreData{}, domain.AnimeGenreNotFound

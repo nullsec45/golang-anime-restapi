@@ -19,6 +19,7 @@ type AnimeStudio struct {
 type AnimeStudioRepository interface {
 	FindAll(ctx context.Context) ([]AnimeStudio, error)
 	FindById(ctx context.Context, id string) (AnimeStudio, error)
+	FindBySlug(ctx context.Context, slug string) (AnimeStudio, error)
 	FindByAnimeId(ctx context.Context, animeId string)([]AnimeStudio, error)
 	Save(ctx context.Context, studio *AnimeStudio) error
 	Update(ctx context.Context, studio *AnimeStudio) error
@@ -27,7 +28,7 @@ type AnimeStudioRepository interface {
 
 type AnimeStudioService interface {	
 	Index(ctx context.Context) ([]dto.AnimeStudioData, error)
-	Show(ctx context.Context, id string) (dto.AnimeStudioData, error)
+	Show(ctx context.Context, param string) (dto.AnimeStudioData, error)
 	Create(ctx context.Context, req dto.CreateAnimeStudioRequest) error
 	Update(ctx context.Context, req dto.UpdateAnimeStudioRequest) error
 	Delete(ctx context.Context, id string) error
