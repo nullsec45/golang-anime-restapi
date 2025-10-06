@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS anime_studios (
   PRIMARY KEY (id, anime_id, studio_id)
 );
 
-CREATE OR REPLACE FUNCTION hard_delete_links_on_soft_delete()
+CREATE OR REPLACE FUNCTION hard_delete_links_on_soft_delete_anime_studios()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- Jalan hanya ketika deleted_at berubah dari NULL -> NOT NULL
+ 
   IF NEW.deleted_at IS NOT NULL AND (OLD.deleted_at IS DISTINCT FROM NEW.deleted_at) THEN
     IF TG_TABLE_NAME = 'studios' THEN
       DELETE FROM anime_studios WHERE studio_id = NEW.id;
@@ -26,15 +26,15 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_studios_soft_delete ON studios;
-CREATE TRIGGER trg_studios_soft_delete
+CREATE TRIGGER trg_studios_many_anime_studios_soft_delete
 AFTER UPDATE OF deleted_at ON studios
 FOR EACH ROW
 WHEN (NEW.deleted_at IS NOT NULL AND (OLD.deleted_at IS DISTINCT FROM NEW.deleted_at))
-EXECUTE FUNCTION hard_delete_links_on_soft_delete();
+EXECUTE FUNCTION hard_delete_links_on_soft_delete_anime_studios();
 
 DROP TRIGGER IF EXISTS trg_animes_soft_delete ON animes;
-CREATE TRIGGER trg_animes_soft_delete
+CREATE TRIGGER trg_animes_many_anime_studios_soft_delete
 AFTER UPDATE OF deleted_at ON animes
 FOR EACH ROW
 WHEN (NEW.deleted_at IS NOT NULL AND (OLD.deleted_at IS DISTINCT FROM NEW.deleted_at))
-EXECUTE FUNCTION hard_delete_links_on_soft_delete();
+EXECUTE FUNCTION hard_delete_links_on_soft_delete_anime_studios();
