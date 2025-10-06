@@ -21,6 +21,7 @@ type AnimeService struct {
 	animeGenreRepository domain.AnimeGenreRepository
 	animeTagRepository domain.AnimeTagRepository
 	mediaRepository domain.MediaRepository
+	animeStudioRepository domain.AnimeStudioRepository
 }
 
 func NewAnime(
@@ -30,6 +31,7 @@ func NewAnime(
 	animeGenreRepository domain.AnimeGenreRepository,
 	animeTagRepository domain.AnimeTagRepository,
 	mediaRepository domain.MediaRepository,
+	animeStudioRepository domain.AnimeStudioRepository,
 ) domain.AnimeService {
 	return &AnimeService{
 		config:config,
@@ -38,6 +40,7 @@ func NewAnime(
 		animeGenreRepository:animeGenreRepository,
 		animeTagRepository:animeTagRepository,
 		mediaRepository:mediaRepository,
+		animeStudioRepository:animeStudioRepository,
 	}
 }
 
@@ -162,7 +165,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		return dto.AnimeShowData{}, err 
 	}
 	
-	tagsData := make([]dto.AnimeTagData,0, len(tags))
+	tagsData := make([]dto.AnimeTagData,0,len(tags))
 	for _, t := range tags {
 		tagsData = append(tagsData, dto.AnimeTagData{
 			Id:t.Id,
@@ -170,6 +173,22 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 			Name:t.Name,
 		})
 	} 
+
+	studios, err := as.animeStudioRepository.FindByAnimeId(ctx, exist.Id)
+	if err != nil { 
+		return dto.AnimeShowData{}, err 
+	}
+	
+	studiosData := make([]dto.AnimeStudioData,0,len(studios))
+	for _, s := range studios {
+		studiosData = append(studiosData, dto.AnimeStudioData{
+			Id:s.Id,
+			Slug:s.Slug,			
+			Name:s.Name,
+			Country:s.Country,
+			SiteURL:s.SiteURL,
+		})
+	}
 
 	var coverUrl string
 
@@ -208,6 +227,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		Episodes:episodesData,
 		Genres:genresData,
 		Tags:tagsData,
+		Studios:studiosData,
     }, nil
 }
 

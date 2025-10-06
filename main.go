@@ -39,7 +39,7 @@ func main(){
 	animeStudiosRepository := repository.NewAnimeStudios(dbConnection)
 
 	authService := service.NewAuth(conf, userRepository)
-	animeService := service.NewAnime(conf, animeRepository, animeEpisodeRepository, animeGenreRepository, animeTagRepository, mediaRepository)
+	animeService := service.NewAnime(conf, animeRepository, animeEpisodeRepository, animeGenreRepository, animeTagRepository, mediaRepository, animeStudioRepository)
 	animeEpisodeService := service.NewAnimeEpisode(animeRepository, animeEpisodeRepository)
 	animeGenreService := service.NewAnimeGenre(animeGenreRepository)
 	animeGenresService := service.NewAnimeGenres(animeRepository, animeGenreRepository, animeGenresRepository)
