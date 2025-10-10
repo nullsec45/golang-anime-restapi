@@ -12,7 +12,7 @@ default: help
 help:
 	@echo "Available targets:"
 	@echo "  migrate-up - Process to up migrating database"
-	@echo "  migrate-up - Process to rollback migrating database"
+	@echo "  migrate-down - Process to rollback migrating database"
 	@echo "  seeder FILENAME - Process the specified seeder file name"
 
 run-dev:
@@ -24,7 +24,6 @@ install:
 
 migrate-up: 
 	migrate -database "postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -path database/migrations up
-
 
 migrate-down: 
 	migrate -database "postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -path database/migrations down
