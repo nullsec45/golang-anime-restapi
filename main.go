@@ -16,7 +16,17 @@ func main(){
 	conf := config.Get()
 	dbConnection := connection.GetDatabase(conf.Database)
 
-	app := fiber.New()
+	app := fiber.New(
+		fiber.Config{
+			ProxyHeader: fiber.HeaderXForwardedFor,
+			EnableTrustedProxyCheck: true,
+			TrustedProxies: []string{
+				"10.0.0.0/8",	
+				"172.16.0.0/12",
+				"192.168.0.0/16",
+			},
+		},
+	)
 
 	authMiddleware := jwtMid.New(
 		jwtMid.Config{
