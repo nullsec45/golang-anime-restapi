@@ -50,23 +50,23 @@ func (api AuthApi) Login(ctx *fiber.Ctx) error {
 		)
 	}
 
-		fails := utility.Validate(req)
-		if len(fails) > 0 {
-			utility.CreateLog("warn", "login failed: validation error", "application", logrus.Fields{
-				"route": "/v1/auth/login",
-				"reason": "validation_failed",
-				"ip": ctx.IP(),
-				"fails": fails, // Go1.21: atau kumpulkan manual
-			})
-			
-			return ctx.Status(http.StatusBadRequest).JSON(
-				dto.CreateResponseErrorData(
-					http.StatusBadRequest,
-					"Failed Login.",
-					fails,
-				),
-			)
-		}
+	fails := utility.Validate(req)
+	if len(fails) > 0 {
+		utility.CreateLog("warn", "login failed: validation error", "application", logrus.Fields{
+			"route": "/v1/auth/login",
+			"reason": "validation_failed",
+			"ip": ctx.IP(),
+			"fails": fails,
+		})
+		
+		return ctx.Status(http.StatusBadRequest).JSON(
+			dto.CreateResponseErrorData(
+				http.StatusBadRequest,
+				"Failed Login.",
+				fails,
+			),
+		)
+	}
 
 	res, err := api.authService.Login(c, req)
 	if err != nil {
@@ -88,6 +88,7 @@ func (api AuthApi) Login(ctx *fiber.Ctx) error {
 			"route": "/v1/auth/login",
 			"error": err.Error(),
 			"ip":    ctx.Context().RemoteAddr().String(),
+			"ua": ctx.Get("User-Agent"),
 		})
 
 		return ctx.Status(statusCode).JSON(
@@ -102,6 +103,7 @@ func (api AuthApi) Login(ctx *fiber.Ctx) error {
 		"route": "/v1/auth/login",
 		"email": utility.MaskEmail(req.Email),
 		"ip":     ctx.IP(),
+		"ua": ctx.Get("User-Agent"),
 	})
 
 	return ctx.Status(http.StatusOK).JSON(
@@ -115,6 +117,15 @@ func (api AuthApi) Register(ctx *fiber.Ctx) error {
 
 	var req dto.RegisterRequest
 	if err := ctx.BodyParser(&req); err != nil {
+		utility.CreateLog("warn", "register failed: invalid request body", "application", logrus.Fields{
+			"route": "/v1/auth/register",
+			"reason": "invalid_body",
+			"error": err.Error(),
+			"ip": ctx.IP(),
+			"ua": ctx.Get("User-Agent"),
+		})
+
+
 		return ctx.Status(http.StatusBadRequest).JSON(
 			dto.CreateResponseErrorData(
 				http.StatusBadRequest,
@@ -126,25 +137,66 @@ func (api AuthApi) Register(ctx *fiber.Ctx) error {
 
 	fails := utility.Validate(req)
 	if len(fails) > 0 {
+		utility.CreateLog("warn", "register failed: validation error", "application", logrus.Fields{
+				"route": "/v1/auth/register",
+				"reason": "validation_failed",
+				"fails": fails,
+				"ip": ctx.IP(),
+				"ua": ctx.Get("User-Agent"),
+		})
+		
 		return ctx.Status(http.StatusBadRequest).JSON(
 			dto.CreateResponseErrorData(
 				http.StatusBadRequest,
-				"Failed created data",
+				"Failed register account",
 				fails,
 			),
 		)
 	}
 
-	// NOTE: jangan shadowing err (pakai =, bukan :=)
 	err := api.authService.Register(c, req)
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(
+		statusCode := http.StatusInternalServerError
+
+		if errors.Is(err, domain.EmailRegister) || errors.Is(err, domain.PasswordNotMatch) {
+			statusCode = 409
+
+			reason := "email_already_register"
+
+			if errors.Is(err, domain.PasswordNotMatch){
+				reason = "password_and_confirm_password_not_matching"
+			}
+
+			utility.CreateLog("info", "register failed: invalid register", "activity", logrus.Fields{
+				"route": "/v1/auth/register",
+				"email": utility.MaskEmail(req.Email),
+				"reason":reason,
+				"ip":    ctx.IP(),
+				"ua":    ctx.Get("User-Agent"),
+			})
+    	}
+
+		utility.CreateLog("error", "register failed: internal error", "application", logrus.Fields{
+			"route": "/v1/auth/register",
+			"error": err.Error(),
+			"ip":    ctx.Context().RemoteAddr().String(),
+			"ua":    ctx.Get("User-Agent"),
+		})
+
+		return ctx.Status(statusCode).JSON(
 			dto.CreateResponseError(
-				http.StatusInternalServerError,
+				statusCode,
 				err.Error(),
 			),
 		)
 	}
+
+	utility.CreateLog("info", "register success", "activity", logrus.Fields{
+		"route": "/v1/auth/register",
+		"email": utility.MaskEmail(req.Email),
+		"ip":     ctx.IP(),
+		"ua": ctx.Get("User-Agent"),
+	})
 
 	return ctx.Status(http.StatusOK).JSON(
 		dto.CreateResponseSuccess("Successfully Register."),
