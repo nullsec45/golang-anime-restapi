@@ -101,12 +101,13 @@ func (ata AnimeTagsAPI) Update (ctx *fiber.Ctx) error {
 	req.Id=ctx.Params("id")
 	err := ata.animeTagsService.Update(ant, req)
 	
-	if errors.Is(err, domain.AnimeTagsNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
-
+	statusCode := http.StatusInternalServerError
+	
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError,err.Error()))
+		if errors.Is(err, domain.AnimeTagsNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -120,12 +121,13 @@ func (ata AnimeTagsAPI) DeleteByAnimeId (ctx *fiber.Ctx) error {
 	id := ctx.Params("animeId")
 	err := ata.animeTagsService.DeleteByAnimeId(ant, id)
 
-	if errors.Is(err, domain.AnimeTagsNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
+	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+		if errors.Is(err, domain.AnimeTagsNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
@@ -138,10 +140,16 @@ func (ata AnimeTagsAPI) DeleteByTagId (ctx *fiber.Ctx) error {
 	id := ctx.Params("tagId")
 	err := ata.animeTagsService.DeleteByTagId(ant, id)
 
+	statusCode := http.StatusInternalServerError
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+		if errors.Is(err, domain.AnimeTagsNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
+	
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
 }
 
@@ -152,8 +160,13 @@ func (ata AnimeTagsAPI) DeleteById (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	err := ata.animeTagsService.DeleteById(ant, id)
 
+	statusCode := http.StatusInternalServerError
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+		if errors.Is(err, domain.AnimeTagsNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))
