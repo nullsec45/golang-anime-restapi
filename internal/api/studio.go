@@ -58,12 +58,13 @@ func (anmSA AnimeStudioAPI) Show (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	res, err := anmSA.animeStudioService.Show(c, id)
 
-	if errors.Is(err, domain.AnimeStudioNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
+	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+		if errors.Is(err, domain.AnimeStudioNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccessWithData("Successfully Get Data", res))
@@ -129,12 +130,13 @@ func (anmSA AnimeStudioAPI) Update (ctx *fiber.Ctx) error {
 	req.Id=ctx.Params("id")
 	err := anmSA.animeStudioService.Update(c,req)
 	
-	if errors.Is(err, domain.AnimeStudioNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
-
+	statusCode := http.StatusInternalServerError
+	
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+		if errors.Is(err, domain.AnimeStudioNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Updated Data"))
@@ -147,12 +149,13 @@ func (anmSA AnimeStudioAPI) Delete (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	err := anmSA.animeStudioService.Delete(c, id)
 
-	if errors.Is(err, domain.AnimeStudioNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
+	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+		if errors.Is(err, domain.AnimeStudioNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Data"))

@@ -57,14 +57,13 @@ func (anmGA AnimeGenreAPI) Show(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	res, err := anmGA.animeGenreService.Show(c, id)
 
-	if errors.Is(err, domain.AnimeGenreNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
-	
+	statusCode := http.StatusInternalServerError
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(
-			dto.CreateResponseError(http.StatusInternalServerError, err.Error()),
-		)
+		if errors.Is(err, domain.AnimeGenreNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(http.StatusOK).JSON(
@@ -145,16 +144,14 @@ func (anmGA AnimeGenreAPI) Update(ctx *fiber.Ctx) error {
 	req.Id = id
 	err := anmGA.animeGenreService.Update(c, req)
 
+	statusCode := http.StatusInternalServerError
+
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(
-			dto.CreateResponseError(http.StatusInternalServerError, err.Error()),
-		)
+		if errors.Is(err, domain.AnimeGenreNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
-
-	if errors.Is(err, domain.AnimeGenreNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
-
 
 	return ctx.Status(http.StatusOK).JSON(
 		dto.CreateResponseSuccess("Successfully Updated Data"),
@@ -174,15 +171,14 @@ func (anmGA AnimeGenreAPI) Delete(ctx *fiber.Ctx) error {
 
 	err := anmGA.animeGenreService.Delete(c, id)
 	
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(
-			dto.CreateResponseError(http.StatusInternalServerError, err.Error()),
-		)
-	}
+	statusCode := http.StatusInternalServerError
 
-	if errors.Is(err, domain.AnimeGenreNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
+	if err != nil {
+		if errors.Is(err, domain.AnimeGenreNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
+	}
 
 	return ctx.Status(http.StatusOK).JSON(
 		dto.CreateResponseSuccess("Successfully Deleted Data"),

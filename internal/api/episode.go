@@ -101,18 +101,14 @@ func (epa EpisodeAPI) DeleteByAnimeId(ctx *fiber.Ctx) error {
 
 	err := epa.animeEpisodeService.DeleteByAnimeId(c, id)
 
-	if  err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(
-			dto.CreateResponseError(
-				http.StatusInternalServerError,
-				err.Error(),
-			),
-		)
-	}
+	statusCode := http.StatusInternalServerError
 
-	if errors.Is(err, domain.AnimeEpisodeNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
+	if err != nil {
+		if errors.Is(err, domain.AnimeEpisodeNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
+	}
 
 	return ctx.Status(http.StatusOK).JSON(
 		dto.CreateResponseSuccess("Successfully Deleted Data"),
@@ -135,18 +131,14 @@ func (epa EpisodeAPI) DeleteById(ctx *fiber.Ctx) error {
 
 	err := epa.animeEpisodeService.DeleteById(c, id)
 
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(
-			dto.CreateResponseError(
-				http.StatusInternalServerError,
-				err.Error(),
-			),
-		)
-	}
+	statusCode := http.StatusInternalServerError
 
-	if errors.Is(err, domain.AnimeEpisodeNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
+	if err != nil {
+		if errors.Is(err, domain.AnimeEpisodeNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
+	}
 
 	return ctx.Status(http.StatusOK).JSON(
 		dto.CreateResponseSuccess("Successfully Deleted Data"),

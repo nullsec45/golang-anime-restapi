@@ -116,13 +116,14 @@ func (ma MediaAPI) Delete (ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 
 	err := ma.mediaService.Delete(an, id)
-
-	if errors.Is(err, domain.AnimeMediaNotFound) {
-        return ctx.Status(http.StatusNotFound).JSON(dto.CreateResponseError(http.StatusNotFound, err.Error()))
-    }
+	
+	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+		if errors.Is(err, domain.AnimeMediaNotFound) {
+			statusCode = http.StatusNotFound
+		}
+		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dto.CreateResponseSuccess("Successfully Deleted Media"))
