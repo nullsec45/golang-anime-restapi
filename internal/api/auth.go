@@ -9,17 +9,20 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"github.com/nullsec45/golang-anime-restapi/internal/session"
 	"github.com/sirupsen/logrus"
 	"errors"
 )
 
 type AuthApi struct {
 	authService domain.AuthService
+	session *session.Manager
 }
 
-func NewAuth(app *fiber.App, authService domain.AuthService) {
+func NewAuth(app *fiber.App, authService domain.AuthService, session *session.Manager) {
 	api := AuthApi{
 		authService: authService,
+		session:session,
 	}
 
 	auth := app.Group("/auth")
@@ -98,6 +101,15 @@ func (api AuthApi) Login(ctx *fiber.Ctx) error {
 			),
 		)
 	}
+
+	if err := api.session.Renew(ctx); err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, "Session renew failed"))
+	}
+
+	if err := api.session.SetUser(ctx, res.UserID, res.Email); err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.CreateResponseError(http.StatusInternalServerError, "Session set failed"))
+	}
+
 
 	utility.CreateLog("info", "login success", "activity", logrus.Fields{
 		"route": "/v1/auth/login",
