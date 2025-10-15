@@ -5,6 +5,12 @@ type Config struct {
 	Database Database
 	Jwt Jwt
 	Storage Storage
+	Redis Redis
+	App App
+}
+
+type App struct{
+	AppEnv string
 }
 
 type Server struct {
@@ -29,4 +35,10 @@ type Database struct {
 
 type Storage struct {
 	BasePath string
+}
+
+type Redis struct {
+	Host string
+	Port string
+	Password string
 }

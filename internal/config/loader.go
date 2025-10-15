@@ -17,12 +17,15 @@ func Get() * Config{
 	expInt, _ := strconv.Atoi(os.Getenv("JWT_EXP"))
 
 	return &Config{
+		App:App{
+			AppEnv:os.Getenv("APP_ENV"),
+		},
 		Server:Server{
 			Host:os.Getenv("SERVER_HOST"),
 			Port:os.Getenv("SERVER_PORT"),
 			Asset:os.Getenv("SERVER_ASSET_URL"),
 		},
-		Database:Database{
+		Database: Database{
 			Host:os.Getenv("DB_HOST"),
 			Port:os.Getenv("DB_PORT"),
 			Name:os.Getenv("DB_NAME"),
@@ -36,6 +39,11 @@ func Get() * Config{
 		},
 		Storage: Storage{	
 			BasePath:os.Getenv("STORAGE_PATH"),
+		},
+		Redis: Redis{
+			Host:os.Getenv("REDIS_HOST"),
+			Port:os.Getenv("REDIS_PORT"),
+			Password:os.Getenv("REDIS_PASSWORD"),
 		},
 	}
 }
