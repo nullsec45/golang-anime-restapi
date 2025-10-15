@@ -6,6 +6,7 @@ import  (
 	"github.com/nullsec45/golang-anime-restapi/internal/config"
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	// "github.com/nullsec45/golang-anime-restapi/internal/cache"
 	"time"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -23,6 +24,7 @@ func NewAuth(cnf *config.Config, userRepository domain.UserRepository) domain.Au
 		userRepository:userRepository,
 	}
 }
+
 
 func (auth AuthService) Login (ctx context.Context, req dto.AuthRequest) (dto.AuthResponse, error){
 	user, err := auth.userRepository.FindByEmail(ctx, req.Email)
@@ -54,6 +56,8 @@ func (auth AuthService) Login (ctx context.Context, req dto.AuthRequest) (dto.Au
 
 	return dto.AuthResponse {
 		Token:tokenStr,
+		UserID:user.Id,
+		Email:user.Email,
 	}, nil
 }
 
