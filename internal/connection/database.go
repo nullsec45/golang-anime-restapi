@@ -6,6 +6,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/internal/config"
 	"log"
 	"database/sql"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 )
 
 func GetDatabase(conf config.Database) *sql.DB{ 
@@ -21,11 +22,13 @@ func GetDatabase(conf config.Database) *sql.DB{
 	db, err := sql.Open("postgres", dsn)	
 
 	if err != nil {
-		log.Fatal("Error connecting to the database:", err.Error())
+		utility.CreateLog("warn", fmt.Sprintf("Failed connect to database: %v", err.Error()), "application")
+		log.Fatal("Failed connect to database:", err.Error())
 	}
 
 	err = db.Ping()
 	if err != nil {	
+		utility.CreateLog("warn", fmt.Sprintf("Error pinging the database:: %v", err.Error()), "application")
 		log.Fatal("Error pinging the database:", err.Error())
 	}
 
