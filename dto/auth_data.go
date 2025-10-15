@@ -7,6 +7,8 @@ type AuthRequest struct {
 
 type AuthResponse struct {
 	Token string `json:"token"`
+	UserID string `json:"-"`
+	Email  string `json:"-"`
 }
 
 type RegisterRequest struct {
