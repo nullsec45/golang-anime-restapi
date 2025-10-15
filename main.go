@@ -10,11 +10,37 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/dto"
 	jwtMid "github.com/gofiber/contrib/jwt"
 	"net/http"
+	"log"
+	// "github.com/nullsec45/golang-anime-restapi/internal/cache"
+	"github.com/nullsec45/golang-anime-restapi/internal/session"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"fmt"
 )
 
 func main(){
 	conf := config.Get()
 	dbConnection := connection.GetDatabase(conf.Database)
+	rdb, err := connection.GetRedisClient(conf.Redis)
+
+	if err != nil { 
+		utility.CreateLog("warn", fmt.Sprintf("failed connect redis: %v", err), "application")
+		log.Fatalf("failed connect redis: %v", err)
+	}
+
+	defer rdb.Close()
+
+	
+	sessionStorage, err := connection.GetRedisStorage(conf.Redis)
+
+	if err != nil {
+		utility.CreateLog("warn", fmt.Sprintf("Failed connect to redis: %v", err), "application")
+		log.Fatalf("failed init redis storage: %v", err)
+	}
+
+	defer connection.CloseRedisStorage(sessionStorage)
+
+	secureCookie := conf.App.AppEnv == "production"
+	sessions := session.NewWithRedisStorage(sessionStorage, secureCookie)
 
 	app := fiber.New(
 		fiber.Config{
@@ -28,6 +54,7 @@ func main(){
 		},
 	)
 
+
 	authMiddleware := jwtMid.New(
 		jwtMid.Config{
 			SigningKey:jwtMid.SigningKey{Key:[]byte(conf.Jwt.Key)},
@@ -36,6 +63,7 @@ func main(){
 			},
 		},
 	)
+
 
 	userRepository := repository.NewUser(dbConnection)
 	animeRepository := repository.NewAnime(dbConnection)
@@ -60,7 +88,7 @@ func main(){
 	animeStudiosService := service.NewAnimeStudios(animeRepository, animeStudioRepository, animeStudiosRepository)
 
 	v1 := fiber.New()
-	api.NewAuth(v1, authService)
+	api.NewAuth(v1, authService, sessions)
 	api.NewAnime(v1, animeService, authMiddleware)
 	api.NewAnimeEpisode(v1, animeEpisodeService, authMiddleware)
 	api.NewAnimeGenre(v1, animeGenreService, authMiddleware)
