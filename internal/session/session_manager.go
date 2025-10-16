@@ -110,3 +110,19 @@ func (m *Manager) Renew(c *fiber.Ctx) error {
 	_, err = m.getSess(c)
 	return err
 }
+
+func (m *Manager) GetUser(c *fiber.Ctx) (userID string, email string, err error) {
+	sess, err := m.getSess(c)
+	if err != nil { return "", "", err }
+
+	if v := sess.Get(KeyUserID); v != nil {
+		userID, _ = v.(string)
+	}
+	if v := sess.Get(KeyUserEmail); v != nil {
+		email, _ = v.(string)
+	}
+	if userID == "" {
+		return "", "", errors.New("no user session")
+	}
+	return userID, email, nil
+}
