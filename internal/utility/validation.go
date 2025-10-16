@@ -29,6 +29,8 @@ func TranslateTag(fd validator.FieldError) string {
 		return fmt.Sprintf("Field %s must be unique", strings.ToLower(fd.StructField()))
 	case "email" :
 		return fmt.Sprintf("Field %s must be email valid", strings.ToLower(fd.StructField()))
+	case "eqfield":
+		return fd.Field()+" must be equal with "+fd.Param()+"."
 	}
 
 	return "validasi gagal"
