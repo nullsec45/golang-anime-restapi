@@ -72,13 +72,6 @@ func (auth AuthService) Register (ctx context.Context, req dto.RegisterRequest) 
 		return domain.EmailRegister
 	}
 	
-	password := req.Password
-	confirmPassword := req.ConfirmPassword
-
-	if password != confirmPassword {
-		return domain.PasswordNotMatch
-	}
-	
 	hashPassword, err := utility.HashPassword(req.ConfirmPassword)
 
 	if err != nil {
@@ -95,4 +88,37 @@ func (auth AuthService) Register (ctx context.Context, req dto.RegisterRequest) 
 	}
 
 	return auth.userRepository.Save(ctx, &user)
+}
+
+
+func (auth AuthService) UpdatePassword (ctx context.Context, req dto.UpdatePasswordRequest, email string) error {
+	userData, err := auth.userRepository.FindByEmail(ctx, email)
+
+	if err != nil {
+		return err
+	}
+	
+	currentPassword :=  req.CurrentPassword
+	newPassword := req.NewPassword
+	
+	err = utility.VerifyPassword(userData.Password, currentPassword)
+
+	if err != nil {
+		return  domain.CurrentPasswordWrong
+	}
+	
+	hashPassword, err := utility.HashPassword(newPassword)
+
+	if err != nil {
+		return err
+	}
+
+
+	user := domain.User {
+		Id:userData.Id,
+		Password:hashPassword,
+		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
+	}
+
+	return auth.userRepository.UpdatePassword(ctx, &user)
 }

@@ -28,3 +28,12 @@ func (userRepo *UserRepository) Save (ctx context.Context, user *domain.User) er
 	_, err := executor.ExecContext(ctx)
 	return err
 }
+
+func (userRepo *UserRepository) UpdatePassword(ctx context.Context, user *domain.User) error {
+    executor := userRepo.db.Update("users").Set(goqu.Record{
+		"password":user.Password,
+		"updated_at":user.UpdatedAt,
+	}).Where(goqu.C("id").Eq(user.Id)).Executor()
+    _, err := executor.ExecContext(ctx)
+    return err
+}
