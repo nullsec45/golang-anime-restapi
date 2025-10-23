@@ -197,3 +197,24 @@ func PtrToInt(p *int) int {
 	}
 	return *p
 }
+
+func ToGenderType(v any) dto.GenderType {
+	switch x := v.(type) {
+	case dto.GenderType:
+		return x
+	case *dto.GenderType:
+		if x == nil {
+			return ""
+		}
+		return *x
+	case string:
+		return dto.GenderType(x)
+	case *string:
+		if x == nil {
+			return ""
+		}
+		return dto.GenderType(*x)
+	default:
+		return ""
+	}
+}
