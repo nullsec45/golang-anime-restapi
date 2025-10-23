@@ -16,7 +16,7 @@ help:
 	@echo "  seeder FILENAME - Process the specified seeder file name"
 
 run-dev:
-	echo "Starting Application In Development Mode"
+	@echo "Starting Application In Development Mode"
 	go run ./main.go
 
 install:
@@ -27,3 +27,6 @@ migrate-up:
 
 migrate-down: 
 	migrate -database "postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -path database/migrations down
+
+migrate-version:
+	migrate -database "postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -path database/migrations version
