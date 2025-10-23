@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/google/uuid"
+	"strings"
 )
 
 func Validate[T any](data T)map[string]string{
@@ -31,6 +32,10 @@ func TranslateTag(fd validator.FieldError) string {
 		return fmt.Sprintf("Field %s must be email valid", strings.ToLower(fd.StructField()))
 	case "eqfield":
 		return fd.Field()+" must be equal with "+fd.Param()+"."
+	case "oneof":
+		allowed := strings.ReplaceAll(fd.Param(), " ", ", ")
+		return fmt.Sprintf("Field %s must be one of: %s", strings.ToLower(fd.StructField()), allowed)
+	}
 	}
 
 	return "validasi gagal"
