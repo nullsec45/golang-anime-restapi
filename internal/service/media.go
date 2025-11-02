@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 	"os"
+	"errors"
+	
 )
 
 type MediaService struct {
@@ -73,6 +75,55 @@ func (m MediaService) Create(ctx context.Context, req dto.CreateMediaRequest) (d
 		Url:url,
 	}, nil
 }
+
+
+func (m MediaService) GetAbsPath(ctx context.Context, id string) (absPath, filename string, modTime time.Time, err error) {
+	media, err := m.mediaRepository.FindById(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) || media.Id == "" {
+			return "", "", time.Time{}, domain.AnimeMediaNotFound
+		}
+		return "", "", time.Time{}, err
+	}
+	if media.Id == "" {
+		return "", "", time.Time{}, domain.AnimeMediaNotFound
+	}
+
+	absFile, err := safeJoin(m.config.Storage.BasePath, media.Path)
+	if err != nil {
+		return "", "", time.Time{}, err
+	}
+
+	st, statErr := os.Stat(absFile)
+	if statErr != nil {
+		if errors.Is(statErr, os.ErrNotExist) {
+			return "", "", time.Time{}, domain.AnimeMediaNotFound
+		}
+		return "", "", time.Time{}, statErr
+	}
+
+	return absFile, filepath.Base(media.Path), st.ModTime(), nil
+}
+
+// func (m MediaService) Update(ctx context.Context, req dto.CreateMediaRequest) (dto.MediaData, error) {
+// 	media := domain.Media{
+// 		Id:uuid.NewString(),
+// 		Path:req.Path,
+// 		CreatedAt:sql.NullTime{Time:time.Now(), Valid:true},
+// 	}
+
+// 	err := m.mediaRepository.Update(ctx, &media)
+// 	if err != nil {
+// 		return dto.MediaData{}, err
+// 	}
+
+// 	url := path.Join(m.config.Server.Asset, media.Path)
+// 	return dto.MediaData{
+// 		Id:media.Id,
+// 		Path:media.Path,
+// 		Url:url,
+// 	}, nil
+// }
 
 func (m MediaService) Delete (ctx context.Context, id string) error {
     exist, err := m.mediaRepository.FindById(ctx, id)

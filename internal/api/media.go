@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 	"errors"
+	// "fmt"
 )
 
 type MediaAPI struct {
@@ -34,6 +35,7 @@ func NewMedia(
 
 	app.Post("/media", authMiddleware, ma.Create)
 	app.Delete("/media/:id", authMiddleware, ma.Delete)
+	app.Get("media/:id",authMiddleware, ma.Get)
 
 }
 
@@ -107,6 +109,29 @@ func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 
 
 	return ctx.Status(http.StatusCreated).JSON(dto.CreateResponseSuccessWithData("Successfullly Create Media",res))
+}
+
+func (ma MediaAPI) Get(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+
+	abs, filename, modTime, err := ma.mediaService.GetAbsPath(ctx.UserContext(), id)
+	if err != nil {
+		if errors.Is(err, domain.AnimeMediaNotFound) {
+			return ctx.Status(fiber.StatusNotFound).
+				JSON(dto.CreateResponseError(http.StatusNotFound, "Media not found"))
+		}
+		return ctx.Status(http.StatusInternalServerError).
+			JSON(dto.CreateResponseError(http.StatusInternalServerError, err.Error()))
+	}
+
+	ctx.Set(fiber.HeaderAcceptRanges, "bytes")
+	ctx.Set(fiber.HeaderCacheControl, "public, max-age=31536000, immutable")
+	ctx.Set(fiber.HeaderLastModified, modTime.UTC().Format(http.TimeFormat))
+	ctx.Response().Header.SetCanonical([]byte("Content-Disposition"), []byte(`inline; filename="`+filename+`"`))
+
+	ctx.Type(filepath.Ext(filename))
+
+	return ctx.SendFile(abs, true) 
 }
 
 func (ma MediaAPI) Delete (ctx *fiber.Ctx) error {

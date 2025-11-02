@@ -45,6 +45,12 @@ func (m MediaRepository) Save(ctx context.Context, media *domain.Media) error {
 	return err
 }
 
+// func (m *MediaRepository) Update(ctx context.Context, media *domain.Media) error {
+//     executor := m.db.Update("media").Set(media).Where(goqu.C("id").Eq(media.Id)).Executor()
+//     _, err := executor.ExecContext(ctx)
+//     return err
+// }
+
 func (m MediaRepository) Delete(ctx context.Context, id string) error {
 	executor := m.db.Delete("media").
 							Where(goqu.C("id").Eq(id)).
