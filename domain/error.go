@@ -19,4 +19,6 @@ var AnimeStudiosNotFound=errors.New("Anime Studios not found!.")
 var AnimeStudiosAlready=errors.New("Anime Studios already in database!.")
 var CurrentPasswordWrong=errors.New("Current Password is Wrong!.")
 var PeopleNotFound=errors.New("People Not Found!")
+var CharacterNotFound=errors.New("Character Not Found!")
+
 
