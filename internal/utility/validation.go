@@ -3,7 +3,6 @@ package utility
 import (
 	"github.com/go-playground/validator/v10"
 	"fmt"
-	"strings"
 	"github.com/google/uuid"
 	"strings"
 )
@@ -35,7 +34,6 @@ func TranslateTag(fd validator.FieldError) string {
 	case "oneof":
 		allowed := strings.ReplaceAll(fd.Param(), " ", ", ")
 		return fmt.Sprintf("Field %s must be one of: %s", strings.ToLower(fd.StructField()), allowed)
-	}
 	}
 
 	return "validasi gagal"
