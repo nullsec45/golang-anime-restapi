@@ -10,44 +10,16 @@ import (
 	"database/sql"
 	"path"
 	"path/filepath"
-	"strings"
-	"os"
 	"errors"
-	
+	"os"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
+	"fmt"
 )
 
 type MediaService struct {
 	config *config.Config
 	mediaRepository domain.MediaRepository
 }
-
-func safeJoin(baseDir,rel string) (string, error) {
-	cleanRel := filepath.Clean(rel)
-	abs := filepath.Join(baseDir, cleanRel)
-
-	baseAbs, err := filepath.Abs(baseDir)
-
-	if err != nil {
-		return "", err
-	}
-	absTarget, err := filepath.Abs(abs)
-	if err != nil {
-		return "", err
-	}
-
-	sep := string(filepath.Separator)
-	if !strings.HasPrefix(absTarget+sep, baseAbs+sep) && absTarget != baseAbs {
-		return "", domain.AnimeMediaOutsideDir
-	}
-
-	return absTarget, nil
-}
-
-func publicURL(baseURL, rel string) string {
-	trimmed := strings.TrimRight(baseURL, "/")
-	return path.Join(trimmed+"/", rel)
-}
-
 
 func NewMedia(config *config.Config, mediaRepository domain.MediaRepository) domain.MediaService {
 	return &MediaService{
@@ -76,9 +48,27 @@ func (m MediaService) Create(ctx context.Context, req dto.CreateMediaRequest) (d
 	}, nil
 }
 
+func (m MediaService) Show (ctx context.Context, id string) (dto.MediaData, error) {
+	exist, err :=  m.mediaRepository.FindById(ctx, id)
 
-func (m MediaService) GetAbsPath(ctx context.Context, id string) (absPath, filename string, modTime time.Time, err error) {
+    if err != nil && exist.Id == "" {
+        return dto.MediaData{}, domain.AnimeMediaNotFound
+    }
+    
+    if err != nil {
+        return dto.MediaData{}, err
+    }
+
+    return dto.MediaData{
+		Id:exist.Id,
+		Path:exist.Path,
+	}, nil
+}
+
+func (m MediaService) View(ctx context.Context, id string) (absPath, filename string, modTime time.Time, err error) {
+	fmt.Println(id)
 	media, err := m.mediaRepository.FindById(ctx, id)
+	fmt.Println(media)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) || media.Id == "" {
 			return "", "", time.Time{}, domain.AnimeMediaNotFound
@@ -89,7 +79,7 @@ func (m MediaService) GetAbsPath(ctx context.Context, id string) (absPath, filen
 		return "", "", time.Time{}, domain.AnimeMediaNotFound
 	}
 
-	absFile, err := safeJoin(m.config.Storage.BasePath, media.Path)
+	absFile, err := utility.SafeJoin(m.config.Storage.BasePath, media.Path)
 	if err != nil {
 		return "", "", time.Time{}, err
 	}
@@ -105,46 +95,49 @@ func (m MediaService) GetAbsPath(ctx context.Context, id string) (absPath, filen
 	return absFile, filepath.Base(media.Path), st.ModTime(), nil
 }
 
-// func (m MediaService) Update(ctx context.Context, req dto.CreateMediaRequest) (dto.MediaData, error) {
-// 	media := domain.Media{
-// 		Id:uuid.NewString(),
-// 		Path:req.Path,
-// 		CreatedAt:sql.NullTime{Time:time.Now(), Valid:true},
-// 	}
+func (m MediaService) Update(ctx context.Context, req dto.UpdateMediaRequest) (dto.MediaData, error) {
+	exist, err := m.mediaRepository.FindById(ctx, req.Id)
 
-// 	err := m.mediaRepository.Update(ctx, &media)
-// 	if err != nil {
-// 		return dto.MediaData{}, err
-// 	}
+	oldPath := exist.Path
 
-// 	url := path.Join(m.config.Server.Asset, media.Path)
-// 	return dto.MediaData{
-// 		Id:media.Id,
-// 		Path:media.Path,
-// 		Url:url,
-// 	}, nil
-// }
+    if err != nil && exist.Id == "" {
+        return dto.MediaData{}, domain.AnimeMediaNotFound
+    }
 
-func (m MediaService) Delete (ctx context.Context, id string) error {
+	fmt.Println(req.Path)
+
+	exist.Path = req.Path	
+	exist.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
+
+	media, err := m.mediaRepository.Update(ctx, &exist)
+
+	if err != nil {
+		return dto.MediaData{}, err
+	}
+
+	url := path.Join(m.config.Server.Asset, media.Path)
+	return dto.MediaData{
+		Id:exist.Id,
+		Path:media.Path,
+		OldPath:oldPath,
+		Url:url,
+	}, nil
+}
+
+func (m MediaService) Delete (ctx context.Context, id string) (path string, err error) {
     exist, err := m.mediaRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeMediaNotFound
+       return "", domain.AnimeMediaNotFound
     }
     
     if err != nil {
-        return err
+        return "", err
     }
 
-	absFile, err := safeJoin(m.config.Storage.BasePath, exist.Path)
-	
-	if err != nil {
-		return err
-	}
-	
-	if rmErr := os.Remove(absFile); rmErr != nil && !os.IsNotExist(rmErr) {
-		return rmErr
+	if err := m.mediaRepository.Delete(ctx, id); err != nil {
+		return "", err
 	}
 
-    return m.mediaRepository.Delete(ctx, id)
+    return exist.Path, nil
 }

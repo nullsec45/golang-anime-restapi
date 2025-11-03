@@ -45,11 +45,25 @@ func (m MediaRepository) Save(ctx context.Context, media *domain.Media) error {
 	return err
 }
 
-// func (m *MediaRepository) Update(ctx context.Context, media *domain.Media) error {
-//     executor := m.db.Update("media").Set(media).Where(goqu.C("id").Eq(media.Id)).Executor()
-//     _, err := executor.ExecContext(ctx)
-//     return err
-// }
+func (m *MediaRepository) Update(ctx context.Context, media *domain.Media) (*domain.Media, error) {
+	ds := m.db.
+		Update("media").
+		Set(media).
+		Where(goqu.C("id").Eq(media.Id)).
+		Returning(goqu.Star()) // SELECT * FROM media ... setelah update
+
+	// Struct tujuan
+	var updated domain.Media
+
+	// ScanStructContext akan ambil row RETURNING
+	_, err := ds.Executor().ScanStructContext(ctx, &updated)
+	if err != nil {
+		// kalau ga ada row yang ke-update, biasanya err di sini
+		return nil, err
+	}
+
+	return &updated, nil
+}
 
 func (m MediaRepository) Delete(ctx context.Context, id string) error {
 	executor := m.db.Delete("media").
