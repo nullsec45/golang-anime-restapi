@@ -72,7 +72,7 @@ func (pa PeopleAPI) Show (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.PeopleNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -148,7 +148,7 @@ func (pa PeopleAPI) Update (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.PeopleNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -167,7 +167,7 @@ func (pa PeopleAPI) Delete (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.PeopleNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))

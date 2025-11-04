@@ -63,7 +63,7 @@ func (ps PeopleService) Show (ctx context.Context, param string) (dto.PeopleData
 
 
     if err != nil && exist.Id == "" {
-        return dto.PeopleData{}, domain.PeopleNotFound
+        return dto.PeopleData{}, utility.NewNotFound("People")
     }
 
     return dto.PeopleData{
@@ -106,7 +106,7 @@ func (ps PeopleService) Update(ctx context.Context, req dto.UpdatePeopleRequest)
     exist, err := ps.peopleRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.PeopleNotFound
+        return utility.NewNotFound("People")
     }
     
     if err != nil {
@@ -138,7 +138,7 @@ func (ps PeopleService) Delete (ctx context.Context, id string) error {
     exist, err := ps.peopleRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  domain.PeopleNotFound
+        return  utility.NewNotFound("People")
     }
     
     if err != nil {

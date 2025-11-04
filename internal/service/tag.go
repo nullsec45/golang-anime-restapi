@@ -52,7 +52,7 @@ func (ats AnimeTagService) Show (ctx context.Context, param string) (dto.AnimeTa
 	}()
 
     if err != nil && exist.Id == "" {
-        return dto.AnimeTagData{}, domain.AnimeTagNotFound
+        return dto.AnimeTagData{}, utility.NewNotFound("Anime Tag")
     }
     
     if err != nil {
@@ -88,7 +88,7 @@ func (ats AnimeTagService) Update(ctx context.Context, req dto.UpdateAnimeTagReq
     exist, err := ats.animeTagRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.AnimeTagNotFound
+        return utility.NewNotFound("Anime Tag")
     }
     
     if err != nil {
@@ -112,7 +112,7 @@ func (ats AnimeTagService) Delete (ctx context.Context, id string) error {
     exist, err := ats.animeTagRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeTagNotFound
+        return  utility.NewNotFound("Anime Tag")
     }
     
     if err != nil {

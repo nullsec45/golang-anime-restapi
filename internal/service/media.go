@@ -52,7 +52,7 @@ func (m MediaService) Show (ctx context.Context, id string) (dto.MediaData, erro
 	exist, err :=  m.mediaRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return dto.MediaData{}, domain.AnimeMediaNotFound
+        return dto.MediaData{}, utility.NewNotFound("Anime Media")
     }
     
     if err != nil {
@@ -71,12 +71,12 @@ func (m MediaService) View(ctx context.Context, id string) (absPath, filename st
 	fmt.Println(media)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) || media.Id == "" {
-			return "", "", time.Time{}, domain.AnimeMediaNotFound
+			return "", "", time.Time{}, utility.NewNotFound("Anime Media")
 		}
 		return "", "", time.Time{}, err
 	}
 	if media.Id == "" {
-		return "", "", time.Time{}, domain.AnimeMediaNotFound
+		return "", "", time.Time{}, utility.NewNotFound("Anime Media")
 	}
 
 	absFile, err := utility.SafeJoin(m.config.Storage.BasePath, media.Path)
@@ -87,7 +87,7 @@ func (m MediaService) View(ctx context.Context, id string) (absPath, filename st
 	st, statErr := os.Stat(absFile)
 	if statErr != nil {
 		if errors.Is(statErr, os.ErrNotExist) {
-			return "", "", time.Time{}, domain.AnimeMediaNotFound
+			return "", "", time.Time{}, utility.NewNotFound("Anime Media")
 		}
 		return "", "", time.Time{}, statErr
 	}
@@ -101,7 +101,7 @@ func (m MediaService) Update(ctx context.Context, req dto.UpdateMediaRequest) (d
 	oldPath := exist.Path
 
     if err != nil && exist.Id == "" {
-        return dto.MediaData{}, domain.AnimeMediaNotFound
+        return dto.MediaData{}, utility.NewNotFound("Anime Media")
     }
 
 	fmt.Println(req.Path)
@@ -128,7 +128,7 @@ func (m MediaService) Delete (ctx context.Context, id string) (path string, err 
     exist, err := m.mediaRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-       return "", domain.AnimeMediaNotFound
+       return "", utility.NewNotFound("Anime Media")
     }
     
     if err != nil {

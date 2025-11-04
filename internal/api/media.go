@@ -120,7 +120,7 @@ func (ma MediaAPI) Get(ctx *fiber.Ctx) error {
 
 	abs, filename, modTime, err := ma.mediaService.View(ctx.UserContext(), id)
 	if err != nil {
-		if errors.Is(err, domain.AnimeMediaNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			return ctx.Status(fiber.StatusNotFound).
 				JSON(dto.CreateResponseError(http.StatusNotFound, "Media not found"))
 		}
@@ -198,7 +198,7 @@ func (ma MediaAPI) Update (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.AnimeMediaNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -249,7 +249,7 @@ func (ma MediaAPI) Delete (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.AnimeMediaNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))

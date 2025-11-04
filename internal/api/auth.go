@@ -76,7 +76,7 @@ func (api AuthApi) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 
-		if errors.Is(err, domain.AuthFail) {
+		if errors.Is(err, domain.ErrAuthFailed) {
 			statusCode = 401
 
 			utility.CreateLog("info", "login failed: invalid credentials", "activity", logrus.Fields{

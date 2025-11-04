@@ -72,7 +72,7 @@ func (ana AnimeAPI) Show (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.AnimeNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -149,7 +149,7 @@ func (ana AnimeAPI) Update (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.AnimeNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -168,7 +168,7 @@ func (ana AnimeAPI) Delete (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.AnimeNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))

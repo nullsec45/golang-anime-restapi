@@ -7,7 +7,7 @@ import(
 	"github.com/google/uuid"
 	"database/sql"
 	"time"
-	// "fmt"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 )
 
 type AnimeStudiosService struct {
@@ -31,7 +31,7 @@ func (astds AnimeStudiosService) Create(ctx context.Context, req dto.CreateAnime
 	anime, errAnime := astds.animeRepository.FindById(ctx, req.AnimeId)
 
 	if anime.Id == "" {
-		return domain.AnimeNotFound
+		return utility.NewNotFound("Anime")
 	}
 
 	if errAnime != nil {
@@ -41,7 +41,7 @@ func (astds AnimeStudiosService) Create(ctx context.Context, req dto.CreateAnime
 	studio, errStudio := astds.studioRepository.FindById(ctx, req.StudioId)
 
 	if studio.Id == "" {
-		return domain.AnimeStudioNotFound
+		return utility.NewNotFound("Anime Studio")
 	}
 
 	if errStudio != nil {
@@ -56,7 +56,7 @@ func (astds AnimeStudiosService) Create(ctx context.Context, req dto.CreateAnime
 	}
 
 	if found {
-		return domain.AnimeStudiosAlready
+		return utility.NewAlreadyExist("Anime Studios")
 	}	
 
  	ag := domain.AnimeStudios{
@@ -75,7 +75,7 @@ func (astds AnimeStudiosService) Update(ctx context.Context, req dto.UpdateAnime
 	exist, err := astds.animeStudiosRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.AnimeStudiosNotFound
+        return utility.NewNotFound("Anime Studios")
     }
     
     if err != nil {
@@ -85,7 +85,7 @@ func (astds AnimeStudiosService) Update(ctx context.Context, req dto.UpdateAnime
 	anime, errAnime := astds.animeRepository.FindById(ctx, req.AnimeId)
 
 	if anime.Id == "" {
-		return domain.AnimeNotFound
+		return utility.NewNotFound("Anime")
 	}
 
 	if errAnime != nil {
@@ -95,7 +95,7 @@ func (astds AnimeStudiosService) Update(ctx context.Context, req dto.UpdateAnime
 	studio, errStudio := astds.studioRepository.FindById(ctx, req.StudioId)
 
 	if studio.Id == "" {
-		return domain.AnimeStudioNotFound
+		return utility.NewNotFound("Anime Studio")
 	}
 
 	if errStudio != nil {
@@ -110,7 +110,7 @@ func (astds AnimeStudiosService) Update(ctx context.Context, req dto.UpdateAnime
 		}
 
 		if found {
-			return domain.AnimeStudiosAlready
+			return utility.NewAlreadyExist("Anime Studios")
 		}	
 	}
 	
@@ -127,7 +127,7 @@ func (astds AnimeStudiosService) DeleteByAnimeId (ctx context.Context, animeId s
     exist, err := astds.animeRepository.FindById(ctx, animeId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeNotFound
+        return  utility.NewNotFound("Anime")
     }
     
     if err != nil {
@@ -141,7 +141,7 @@ func (astds AnimeStudiosService) DeleteByStudioId (ctx context.Context, studioId
     exist, err := astds.studioRepository.FindById(ctx, studioId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeStudioNotFound
+        return  utility.NewNotFound("Anime Studio")
     }
     
     if err != nil {
@@ -155,7 +155,7 @@ func (astds AnimeStudiosService) DeleteById (ctx context.Context, Id string) err
     exist, err := astds.animeStudiosRepository.FindById(ctx, Id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeStudiosNotFound
+        return  utility.NewNotFound("Anime Studios")
     }
     
     if err != nil {

@@ -61,7 +61,7 @@ func (anmSA AnimeStudioAPI) Show (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.AnimeStudioNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -133,7 +133,7 @@ func (anmSA AnimeStudioAPI) Update (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 	
 	if err != nil {
-		if errors.Is(err, domain.AnimeStudioNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -152,7 +152,7 @@ func (anmSA AnimeStudioAPI) Delete (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 
 	if err != nil {
-		if errors.Is(err, domain.AnimeStudioNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))

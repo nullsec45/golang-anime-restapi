@@ -59,7 +59,7 @@ func (cs CharacterService) Show (ctx context.Context, param string) (dto.Charact
 
 
     if err != nil && exist.Id == "" {
-        return dto.CharacterData{}, domain.CharacterNotFound
+        return dto.CharacterData{}, utility.NewNotFound("Character")
     }
 
     return dto.CharacterData{
@@ -94,7 +94,7 @@ func (cs CharacterService) Update(ctx context.Context, req dto.UpdateCharacterRe
     exist, err := cs.characterRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.CharacterNotFound
+        return utility.NewNotFound("Character")
     }
     
     if err != nil {
@@ -122,7 +122,7 @@ func (cs CharacterService) Delete (ctx context.Context, id string) error {
     exist, err := cs.characterRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  domain.CharacterNotFound
+        return  utility.NewNotFound("Character")
     }
     
     if err != nil {

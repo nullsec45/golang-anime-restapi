@@ -118,7 +118,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 
 
     if err != nil && exist.Id == "" {
-        return dto.AnimeShowData{}, domain.AnimeNotFound
+        return dto.AnimeShowData{}, utility.NewNotFound("Anime")
     }
     
     if err != nil {
@@ -282,7 +282,7 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
     exist, err := as.animeRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.AnimeNotFound
+        return utility.NewNotFound("Anime")
     }
     
     if err != nil {
@@ -374,7 +374,7 @@ func (as AnimeService) Delete (ctx context.Context, id string) error {
     exist, err := as.animeRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeNotFound
+        return  utility.NewNotFound("Anime")
     }
     
     if err != nil {

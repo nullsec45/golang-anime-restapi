@@ -105,7 +105,7 @@ func (aga AnimeGenresAPI) Update (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 	
 	if err != nil {
-		if errors.Is(err, domain.AnimeGenresNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -126,7 +126,7 @@ func (aga AnimeGenresAPI) DeleteByAnimeId (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 	
 	if err != nil {
-		if errors.Is(err, domain.AnimeGenresNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -145,7 +145,7 @@ func (aga AnimeGenresAPI) DeleteByGenreId (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 	
 	if err != nil {
-		if errors.Is(err, domain.AnimeGenresNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))
@@ -164,7 +164,7 @@ func (aga AnimeGenresAPI) DeleteById (ctx *fiber.Ctx) error {
 	statusCode := http.StatusInternalServerError
 	
 	if err != nil {
-		if errors.Is(err, domain.AnimeGenresNotFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			statusCode = http.StatusNotFound
 		}
 		return ctx.Status(statusCode).JSON(dto.CreateResponseError(statusCode, err.Error()))

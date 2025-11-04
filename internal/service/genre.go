@@ -53,7 +53,7 @@ func (ags AnimeGenreService) Show (ctx context.Context, param string) (dto.Anime
 
 
     if err != nil && exist.Id == "" {
-        return dto.AnimeGenreData{}, domain.AnimeGenreNotFound
+        return dto.AnimeGenreData{}, utility.NewNotFound("Anime Genre")
     }
     
     if err != nil {
@@ -89,7 +89,7 @@ func (ags AnimeGenreService) Update(ctx context.Context, req dto.UpdateAnimeGenr
     exist, err := ags.animeGenreRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.AnimeGenreNotFound
+        return utility.NewNotFound("Anime Genre")
     }
     
     if err != nil {
@@ -113,7 +113,7 @@ func (ags AnimeGenreService) Delete (ctx context.Context, id string) error {
     exist, err := ags.animeGenreRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeGenreNotFound
+        return  utility.NewNotFound("Anime Genre")
     }
     
     if err != nil {

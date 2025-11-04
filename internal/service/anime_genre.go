@@ -7,7 +7,7 @@ import(
 	"github.com/google/uuid"
 	"database/sql"
 	"time"
-	// "fmt"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 )
 
 type AnimeGenresService struct {
@@ -31,7 +31,7 @@ func (agrs AnimeGenresService) Create(ctx context.Context, req dto.CreateAnimeGe
 	anime, errAnime := agrs.animeRepository.FindById(ctx, req.AnimeId)
 
 	if anime.Id == "" {
-		return domain.AnimeNotFound
+		return utility.NewNotFound("Anime")
 	}
 
 	if errAnime != nil {
@@ -41,7 +41,7 @@ func (agrs AnimeGenresService) Create(ctx context.Context, req dto.CreateAnimeGe
 	genre, errGenre := agrs.genreRepository.FindById(ctx, req.GenreId)
 
 	if genre.Id == "" {
-		return domain.AnimeGenreNotFound
+		return utility.NewNotFound("Anime Genres")
 	}
 
 	if errGenre != nil {
@@ -56,7 +56,7 @@ func (agrs AnimeGenresService) Create(ctx context.Context, req dto.CreateAnimeGe
 	}
 
 	if found {
-		return domain.AnimeGenresAlready
+		return utility.NewAlreadyExist("Anime Genres")
 	}	
 
  	ag := domain.AnimeGenres{
@@ -74,7 +74,7 @@ func (agrs AnimeGenresService) Update(ctx context.Context, req dto.UpdateAnimeGe
 	exist, err := agrs.animeGenresRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.AnimeGenresNotFound
+        return utility.NewNotFound("Anime Genres")
     }
     
     if err != nil {
@@ -84,7 +84,7 @@ func (agrs AnimeGenresService) Update(ctx context.Context, req dto.UpdateAnimeGe
 	anime, errAnime := agrs.animeRepository.FindById(ctx, req.AnimeId)
 
 	if anime.Id == "" {
-		return domain.AnimeNotFound
+		return utility.NewNotFound("Anime")
 	}
 
 	if errAnime != nil {
@@ -94,7 +94,7 @@ func (agrs AnimeGenresService) Update(ctx context.Context, req dto.UpdateAnimeGe
 	genre, errGenre := agrs.genreRepository.FindById(ctx, req.GenreId)
 
 	if genre.Id == "" {
-		return domain.AnimeGenreNotFound
+		return utility.NewNotFound("Anime Genre")
 	}
 
 	if errGenre != nil {
@@ -108,7 +108,7 @@ func (agrs AnimeGenresService) Update(ctx context.Context, req dto.UpdateAnimeGe
 	}
 
 	if found {
-		return domain.AnimeGenresAlready
+		return utility.NewAlreadyExist("Anime Genres")
 	}	
 
 
@@ -124,7 +124,7 @@ func (agrs AnimeGenresService) DeleteByAnimeId (ctx context.Context, animeId str
     exist, err := agrs.animeRepository.FindById(ctx, animeId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeNotFound
+        return  utility.NewNotFound("Anime")
     }
     
     if err != nil {
@@ -138,7 +138,7 @@ func (agrs AnimeGenresService) DeleteByGenreId (ctx context.Context, genreId str
     exist, err := agrs.genreRepository.FindById(ctx, genreId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeGenreNotFound
+        return  utility.NewNotFound("Anime Genre")
     }
     
     if err != nil {
@@ -152,7 +152,7 @@ func (agrs AnimeGenresService) DeleteById (ctx context.Context, Id string) error
     exist, err := agrs.animeGenresRepository.FindById(ctx, Id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeGenresNotFound
+        return  utility.NewNotFound("Anime Genres")
     }
     
     if err != nil {

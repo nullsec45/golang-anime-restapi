@@ -34,12 +34,12 @@ func (auth AuthService) Login (ctx context.Context, req dto.AuthRequest) (dto.Au
 	}
 	
 	if user.Id == "" {
-		return dto.AuthResponse{}, domain.AuthFail
+		return dto.AuthResponse{}, utility.NewAuthFailed("Username or Pasword invalid!")
 	}
 	
 	err = utility.VerifyPassword(user.Password, req.Password)
 	if err != nil {
-		return dto.AuthResponse{}, domain.AuthFail
+		return dto.AuthResponse{}, utility.NewAuthFailed("Username or Pasword invalid!")
 	}
 
 	claim := jwt.MapClaims {

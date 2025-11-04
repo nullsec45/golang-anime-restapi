@@ -30,9 +30,8 @@ func (as AnimeEpisodeService) Create(ctx context.Context, req dto.CreateAnimeEpi
 	anime, err := as.animeRepository.FindById(ctx, req.AnimeId)
 
 	if anime.Id == "" {
-		return domain.AnimeNotFound
+		return utility.NewNotFound("Anime")
 	}
-
 
 	if err != nil {
 		return err
@@ -59,7 +58,7 @@ func (as AnimeEpisodeService) DeleteByAnimeId (ctx context.Context, animeId stri
     exist, err := as.animeRepository.FindById(ctx, animeId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeNotFound
+        return  utility.NewNotFound("Anime")
     }
     
     if err != nil {
@@ -73,7 +72,7 @@ func (as AnimeEpisodeService) DeleteById (ctx context.Context, animeId string) e
     exist, err := as.animeEpisodeRepository.FindById(ctx, animeId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeNotFound
+        return  utility.NewNotFound("Anime")
     }
     
     if err != nil {

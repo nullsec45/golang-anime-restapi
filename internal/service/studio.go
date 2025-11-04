@@ -54,7 +54,7 @@ func (ass AnimeStudioService) Show (ctx context.Context, param string) (dto.Anim
 	}()
 
     if err != nil && exist.Id == "" {
-        return dto.AnimeStudioData{}, domain.AnimeStudioNotFound
+        return dto.AnimeStudioData{}, utility.NewNotFound("Anime Studio")
     }
     
     if err != nil {
@@ -94,7 +94,7 @@ func (ass AnimeStudioService) Update(ctx context.Context, req dto.UpdateAnimeStu
     exist, err := ass.animeStudioRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.AnimeStudioNotFound
+        return utility.NewNotFound("Anime Studio")
     }
     
     if err != nil {
@@ -120,7 +120,7 @@ func (ass AnimeStudioService) Delete (ctx context.Context, id string) error {
     exist, err := ass.animeStudioRepository.FindById(ctx, id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeStudioNotFound
+        return  utility.NewNotFound("Anime Studio")
     }
     
     if err != nil {

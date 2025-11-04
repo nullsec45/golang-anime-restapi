@@ -7,6 +7,7 @@ import(
 	"github.com/google/uuid"
 	"database/sql"
 	"time"
+	"github.com/nullsec45/golang-anime-restapi/internal/utility"
 )
 
 type AnimeTagsService struct {
@@ -30,7 +31,7 @@ func (ats AnimeTagsService) Create(ctx context.Context, req dto.CreateAnimeTagsR
 	anime, errAnime := ats.animeRepository.FindById(ctx, req.AnimeId)
 
 	if anime.Id == "" {
-		return domain.AnimeNotFound
+		return utility.NewNotFound("Anime")
 	}
 
 	if errAnime != nil {
@@ -40,7 +41,7 @@ func (ats AnimeTagsService) Create(ctx context.Context, req dto.CreateAnimeTagsR
 	tag, errTag := ats.tagRepository.FindById(ctx, req.TagId)
 
 	if tag.Id == "" {
-		return domain.AnimeTagNotFound
+		return utility.NewNotFound("Anime Tag")
 	}
 
 	if errTag != nil {
@@ -54,7 +55,7 @@ func (ats AnimeTagsService) Create(ctx context.Context, req dto.CreateAnimeTagsR
 	}
 
 	if found {
-		return domain.AnimeTagsAlready
+		return utility.NewAlreadyExist("Anime Tags")
 	}	
 	
  	ag := domain.AnimeTags{
@@ -71,7 +72,7 @@ func (ats AnimeTagsService) Update(ctx context.Context, req dto.UpdateAnimeTagsR
 	exist, err := ats.animeTagsRepository.FindById(ctx, req.Id)
 
     if err != nil && exist.Id == "" {
-        return domain.AnimeTagsNotFound
+        return utility.NewNotFound("Anime Tags")
     }
     
     if err != nil {
@@ -81,7 +82,7 @@ func (ats AnimeTagsService) Update(ctx context.Context, req dto.UpdateAnimeTagsR
 	anime, errAnime := ats.animeRepository.FindById(ctx, req.AnimeId)
 
 	if anime.Id == "" {
-		return domain.AnimeNotFound
+		return utility.NewNotFound("Anime")
 	}
 
 	if errAnime != nil {
@@ -91,7 +92,7 @@ func (ats AnimeTagsService) Update(ctx context.Context, req dto.UpdateAnimeTagsR
 	tag, errTag := ats.tagRepository.FindById(ctx, req.TagId)
 
 	if tag.Id == "" {
-		return domain.AnimeTagNotFound
+		return utility.NewNotFound("Anime Tag")
 	}
 
 	if errTag != nil {
@@ -105,7 +106,7 @@ func (ats AnimeTagsService) Update(ctx context.Context, req dto.UpdateAnimeTagsR
 	}
 
 	if found {
-		return domain.AnimeTagsAlready
+		return utility.NewAlreadyExist("Anime Tags")
 	}
 
 	exist.AnimeId = req.AnimeId
@@ -120,7 +121,7 @@ func (ats AnimeTagsService) DeleteByAnimeId (ctx context.Context, animeId string
     exist, err := ats.animeRepository.FindById(ctx, animeId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeNotFound
+        return  utility.NewNotFound("Anime")
     }
     
     if err != nil {
@@ -134,7 +135,7 @@ func (ats AnimeTagsService) DeleteByTagId (ctx context.Context, tagId string) er
     exist, err := ats.tagRepository.FindById(ctx, tagId)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeTagNotFound
+        return  utility.NewNotFound("Anime Tag")
     }
     
     if err != nil {
@@ -148,7 +149,7 @@ func (ats AnimeTagsService) DeleteById (ctx context.Context, Id string) error {
     exist, err := ats.animeTagsRepository.FindById(ctx, Id)
 
     if err != nil && exist.Id == "" {
-        return  domain.AnimeTagsNotFound
+        return  utility.NewNotFound("Anime Tags")
     }
     
     if err != nil {
