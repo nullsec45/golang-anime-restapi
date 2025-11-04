@@ -51,7 +51,7 @@ func (auth AuthService) Login (ctx context.Context, req dto.AuthRequest) (dto.Au
 	tokenStr, err := token.SignedString([]byte(auth.config.Jwt.Key))
 
 	if err != nil {
-		return dto.AuthResponse{}, domain.AuthFail
+		return dto.AuthResponse{}, utility.NewAuthFailed("Username or Pasword invalid!")
 	}
 
 	return dto.AuthResponse {

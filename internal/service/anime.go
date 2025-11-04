@@ -247,7 +247,7 @@ func (as AnimeService) Create(ctx context.Context, req dto.CreateAnimeRequest) e
 		cover, err := as.mediaRepository.FindById(ctx, req.CoverId)
 
 		if err != nil && cover.Id == "" {
-       		return domain.AnimeMediaNotFound
+       		return utility.NewNotFound("Anime Media")
 		} 
 	}											
 	
@@ -305,7 +305,7 @@ func (as AnimeService) Update(ctx context.Context, req dto.UpdateAnimeRequest)  
 		cover, err := as.mediaRepository.FindById(ctx, req.CoverId)
 
 		if err != nil && cover.Id == "" {
-       		return domain.AnimeMediaNotFound
+       		return utility.NewNotFound("Anime Media")
 		} 
 	}			
 
