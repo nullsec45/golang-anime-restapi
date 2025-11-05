@@ -1,0 +1,5 @@
+ALTER TABLE episodes
+DROP CONSTRAINT IF EXISTS epsiodes_video_fkey ;
+
+ALTER TABLE episodes
+DROP COLUMN IF EXISTS video;
