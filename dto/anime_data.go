@@ -116,7 +116,7 @@ type CreateAnimeRequest struct {
 	ScoreAvg               float32                 `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
 	AltTitles              AltTitles               `json:"alt_titles,omitempty"`
 	ExternalIDs            ExternalIDs             `json:"external_ids,omitempty"`
-	CoverId                string                  `json:"cover_id"`
+	CoverId                string                  `json:"cover_id,omitempty"`
 
 }
 
@@ -141,5 +141,5 @@ type UpdateAnimeRequest struct {
 	ScoreAvg               float32                 `json:"score_avg,omitempty" validate:"omitempty,gte=0,lte=9.99"` 
 	AltTitles              AltTitles               `json:"alt_titles,omitempty"`
 	ExternalIDs            ExternalIDs             `json:"external_ids,omitempty"`
-	CoverId                string                  `json:"cover_id"`
+	CoverId                string                  `json:"cover_id,omitempty"`
 }
