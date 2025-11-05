@@ -17,6 +17,7 @@ type Server struct {
 	Host string
 	Port string
 	Asset string
+	AssetPrivate string
 }
 
 type Jwt struct {

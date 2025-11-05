@@ -24,6 +24,7 @@ func Get() * Config{
 			Host:os.Getenv("SERVER_HOST"),
 			Port:os.Getenv("SERVER_PORT"),
 			Asset:os.Getenv("SERVER_ASSET_URL"),
+			AssetPrivate:os.Getenv("SERVER_ASSET_URL_PRIVATE"),
 		},
 		Database: Database{
 			Host:os.Getenv("DB_HOST"),

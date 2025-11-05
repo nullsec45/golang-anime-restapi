@@ -11,7 +11,6 @@ import(
 	"time"
 	"github.com/gosimple/slug"
 	"fmt"
-	"path"
 )
 
 type AnimeService struct {
@@ -64,7 +63,7 @@ func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) 
 		media, _ := as.mediaRepository.FindByIds(ctx, coverId)
 
 		for _, v := range media {
-			covers[v.Id] = path.Join(as.config.Server.Asset, v.Path)
+			covers[v.Id] = as.config.Server.AssetPrivate+"/"+v.Id
 		}
 	}
 
@@ -196,7 +195,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		cover, _ := as.mediaRepository.FindById(ctx, exist.CoverId.String)
 
 		if cover.Path != "" {
-			coverUrl = path.Join(as.config.Server.Asset, cover.Path)
+			coverUrl = as.config.Server.AssetPrivate+"/"+cover.Id
 		}
 	}
 
