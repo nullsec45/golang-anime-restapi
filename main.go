@@ -76,6 +76,7 @@ func main(){
 	animeStudiosRepository := repository.NewAnimeStudios(dbConnection)
 	peopleRepository := repository.NewPeople(dbConnection)
 	characterRepository := repository.NewCharacter(dbConnection)
+	voiceCastRepository := repository.NewVoiceCast(dbConnection)
 
 	authService := service.NewAuth(conf, userRepository)
 	animeService := service.NewAnime(conf, animeRepository, animeEpisodeRepository, animeGenreRepository, animeTagRepository, mediaRepository, animeStudioRepository)
@@ -89,6 +90,7 @@ func main(){
 	animeStudiosService := service.NewAnimeStudios(animeRepository, animeStudioRepository, animeStudiosRepository)
 	peopleService := service.NewPeople(peopleRepository)
 	characterService := service.NewCharacter(characterRepository)
+	voiceCastService := service.NewVoiceCast(animeRepository, characterRepository, peopleRepository, voiceCastRepository)
 
 	v1 := fiber.New()
 	api.NewAuth(v1, authService, sessions)
@@ -103,6 +105,7 @@ func main(){
 	api.NewAnimeStudios(v1, animeStudiosService, authMiddleware)
 	api.NewPeople(v1, peopleService, authMiddleware)
 	api.NewCharacter(v1, characterService, authMiddleware)
+	api.NewVoiceCast(v1, voiceCastService, authMiddleware)
 	
 	app.Mount("/v1", v1)
 
