@@ -21,6 +21,7 @@ type AnimeService struct {
 	animeTagRepository domain.AnimeTagRepository
 	mediaRepository domain.MediaRepository
 	animeStudioRepository domain.AnimeStudioRepository
+	voiceCastRepository domain.VoiceCastRepository
 }
 
 func NewAnime(
@@ -31,6 +32,7 @@ func NewAnime(
 	animeTagRepository domain.AnimeTagRepository,
 	mediaRepository domain.MediaRepository,
 	animeStudioRepository domain.AnimeStudioRepository,
+	voiceCastRepository domain.VoiceCastRepository,
 ) domain.AnimeService {
 	return &AnimeService{
 		config:config,
@@ -40,6 +42,7 @@ func NewAnime(
 		animeTagRepository:animeTagRepository,
 		mediaRepository:mediaRepository,
 		animeStudioRepository:animeStudioRepository,
+		voiceCastRepository:voiceCastRepository,
 	}
 }
 
@@ -134,7 +137,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 	for _, v := range episodes {
 		episodesData = append(episodesData, dto.AnimeEpisodeData{
 			Id:              v.Id,
-			AnimeId:         v.AnimeId,
+			// AnimeId:         v.AnimeId,
 			Number:          v.Number,
 			SeasonNumber:    v.SeasonNumber,
 			Title:           v.Title,
@@ -189,6 +192,44 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		})
 	}
 
+	voiceCasts, err := as.voiceCastRepository.FindByAnimeId(ctx,exist.Id)
+
+	if err != nil {
+		return dto.AnimeShowData{}, nil
+	}
+
+	voiceCastData := make([]dto.VoiceCastShowData, 0, len(voiceCasts))
+	for _, vc := range voiceCasts {
+		voiceCastData = append(voiceCastData, dto.VoiceCastShowData{
+			VoiceCastData: dto.VoiceCastData{
+				Id:          vc.Id,
+				Language:    utility.ToStringPtr(vc.Language),  // atau utility.ToString(*vc.Language)
+				RoleNote:    utility.ToStringPtr(vc.Language),
+			},
+			Character: dto.CharacterData{
+				Id:   vc.CharacterId,
+				Slug: vc.CharacterSlug,
+				Name: vc.CharacterName,
+				NameNative:vc.CharacterNameNative,
+				Description:vc.CharacterDescription,
+				// isi field lain kalau CharacterData kamu punya field tambahan
+			},
+			People: dto.PeopleData{
+				Id:   vc.PersonId,
+				Slug: vc.PeopleSlug,
+				Name: vc.PeopleName,
+				NameNative:vc.PeopleNameNative,
+				Birthday:utility.ToTimePtr(vc.PeopleBirthday),
+				Gender:vc.PeopleGender,
+				Country:vc.PeopleCountry,
+				SiteURL:vc.PeopleSiteURL,
+				Biography:vc.PeopleBiography,
+				// isi field lain kalau PeopleData kamu punya field tambahan
+			},
+		})
+	}
+
+
 	var coverUrl string
 
 	if exist.CoverId.Valid {
@@ -227,6 +268,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		Genres:genresData,
 		Tags:tagsData,
 		Studios:studiosData,
+		VoiceCast: voiceCastData,
     }, nil
 }
 
