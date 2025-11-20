@@ -218,3 +218,10 @@ func ToGenderType(v any) dto.GenderType {
 		return ""
 	}
 }
+
+func ToStringPtr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
