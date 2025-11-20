@@ -57,7 +57,7 @@ func (ma MediaAPI) Create (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
-	allowed := []string{".jpg",".jpeg",".png",".mp4",".mkv",".avi",".flv"}
+	allowed := []string{".jpg",".jpeg",".png",".mp4",".mkv",".avi",".flv",".webp"}
 	const maxMB=20
 	const maxBytes=maxMB * 1024 * 1024
 
@@ -152,7 +152,7 @@ func (ma MediaAPI) Update (ctx *fiber.Ctx) error {
 	c, cancel := context.WithTimeout(ctx.Context(), 10 * time.Second)
 	defer cancel()
 
-	allowed := []string{".jpg",".jpeg",".png",".mp4",".mkv",".avi",".flv"}
+	allowed := []string{".jpg",".jpeg",".png",".mp4",".mkv",".avi",".flv",".webp"}
 	const maxMB=20
 	const maxBytes=maxMB * 1024 * 1024
 
