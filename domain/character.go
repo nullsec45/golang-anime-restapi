@@ -7,13 +7,14 @@ import (
 )
 
 type Character struct {
-	Id                     string        `db:"id"`
-	Slug                   string        `db:"slug"`
-	Name                   string        `db:"name"`
-	NameNative             string        `db:"name_native"`
-	Description            string        `db:"description"`
-	CreatedAt              sql.NullTime  `db:"created_at"`
-	UpdatedAt              sql.NullTime  `db:"updated_at"`
+	Id                     string          `db:"id"`
+	Slug                   string          `db:"slug"`
+	Name                   string          `db:"name"`
+	NameNative             string          `db:"name_native"`
+	Description            string          `db:"description"`
+	CharacterImage    	   sql.NullString  `db:"character_image"`
+	CreatedAt              sql.NullTime    `db:"created_at"`
+	UpdatedAt              sql.NullTime    `db:"updated_at"`
 }
 
 type CharacterFilter struct {

@@ -7,6 +7,7 @@ import (
 	"context"
 	"strings"
 	"time"
+	// "fmt"
 )
 
 type CharacterRepository struct {
@@ -35,6 +36,10 @@ func (cr *CharacterRepository) FindAll(ctx context.Context, opts domain.Characte
 	uOffset := uint(offset)
 
 	dataset := cr.db.From("characters").
+					LeftJoin(
+						goqu.T("media").As("m"),
+						goqu.On(goqu.I("characters.character_image").Eq(goqu.I("m.id"))),
+					).
 					Where(goqu.C("deleted_at").IsNull()).
 					Select(
 						goqu.I("characters.id"),
@@ -43,6 +48,7 @@ func (cr *CharacterRepository) FindAll(ctx context.Context, opts domain.Characte
 						goqu.I("characters.name_native"),
 						goqu.I("characters.description"),
 						goqu.L("COUNT(*) OVER()").As("total_count"),
+						goqu.L("m.path").As("character_image"),
 					)
 	
     if s := opts.Filter.Search; s != "" {
@@ -61,7 +67,7 @@ func (cr *CharacterRepository) FindAll(ctx context.Context, opts domain.Characte
 				dataset = dataset.Order(goqu.I(opts.Pagination.Sort).Desc())
 			}
 		default:
-			dataset = dataset.Order(goqu.I("created_at").Desc())
+			dataset = dataset.Order(goqu.I("characters.created_at").Desc())
 	}
 
 	dataset = dataset.Limit(uLimit).Offset(uOffset)
@@ -84,13 +90,32 @@ func (cr *CharacterRepository) FindAll(ctx context.Context, opts domain.Characte
 }
 
 func (cr *CharacterRepository) FindById(ctx context.Context, id string) (result domain.Character, err error) {
-	dataset := cr.db.From("characters").Where(
-		goqu.C("id").Eq(id),
-	)
-	found, err := dataset.ScanStructContext(ctx, &result)
-	if 	!found {
-		return result, sql.ErrNoRows
-	}
+	dataset := cr.db.From("characters").
+					 LeftJoin(
+						goqu.T("media").As("m"),
+						goqu.On(goqu.I("characters.character_image").Eq(goqu.I("m.id"))),
+					 ).
+					Select(
+						goqu.I("characters.id"),
+						goqu.I("characters.slug"),
+						goqu.I("characters.name"),
+						goqu.I("characters.name_native"),
+						goqu.I("characters.description"),
+						goqu.L("m.path").As("character_image"),
+					).
+					 Where(
+						goqu.I("characters.id").Eq(id),
+					 )
+					 found, err := dataset.ScanStructContext(ctx, &result)
+
+
+					 if err !=nil {
+						return domain.Character{}, err
+					 }
+
+					 if !found {
+				 		return result, sql.ErrNoRows
+					 }
 	return result, err
 }
 

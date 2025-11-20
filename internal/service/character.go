@@ -9,17 +9,24 @@ import(
 	"database/sql"
 	"time"
 	"github.com/gosimple/slug"
+	"github.com/nullsec45/golang-anime-restapi/internal/config"
+	// "fmt"
 )
 
 type CharacterService struct {
 	characterRepository domain.CharacterRepository
+	mediaRepository domain.MediaRepository
+	config *config.Config
 }
 
 func NewCharacter(
 	characterRepository domain.CharacterRepository,
-) domain.CharacterService {
+	mediaRepository  domain.MediaRepository,
+	config *config.Config) domain.CharacterService {
 	return &CharacterService{
 		characterRepository: characterRepository,
+		mediaRepository:mediaRepository,
+		config:config,
 	}
 }
 
@@ -32,14 +39,20 @@ func (cs CharacterService) Index(ctx context.Context, opts domain.CharacterListO
 
 	var characterData []dto.CharacterData
 
+
 	for _, v:= range items {
+		characterImage := ""
+		if v.CharacterImage.Valid {
+			characterImage = cs.config.Server.Asset + "/" + v.CharacterImage.String
+		}
 
 		characterData = append(characterData, dto.CharacterData{
-			Id:                     v.Id,
-			Slug:                   v.Slug,
-			NameNative:             v.NameNative,
-			Name:                   v.Name,       
-			Description:            v.Description,        
+			Id:             v.Id,
+			Slug:           v.Slug,
+			NameNative:     v.NameNative,
+			Name:           v.Name,
+			Description:    v.Description,
+			CharacterImage: characterImage,
 		})
 	}
 
@@ -57,17 +70,26 @@ func (cs CharacterService) Show (ctx context.Context, param string) (dto.Charact
 		return cs.characterRepository.FindBySlug(ctx, param)
 	}()
 
+	if err != nil {
+		return dto.CharacterData{}, err
+	}
 
     if err != nil && exist.Id == "" {
         return dto.CharacterData{}, utility.NewNotFound("Character")
     }
 
+	characterImage := ""
+	if exist.CharacterImage.Valid {
+		characterImage = cs.config.Server.Asset + "/" + exist.CharacterImage.String
+	}
+
     return dto.CharacterData{
-		Id:                     exist.Id,
-		Slug:                   exist.Slug,
-		Name:                   exist.Name,       
-		NameNative:             exist.NameNative,
-		Description:            exist.Description,    
+		Id:              exist.Id,
+		Slug:            exist.Slug,
+		Name:            exist.Name,       
+		NameNative:      exist.NameNative,
+		Description:     exist.Description,    
+		CharacterImage:  characterImage,
     }, nil
 }
 
@@ -78,12 +100,25 @@ func (cs CharacterService) Create(ctx context.Context, req dto.CreateCharacterRe
         characterSlug = slug.Make(req.Name) 
     }
 
+	image := sql.NullString{String:req.CharacterImage, Valid:false}
+
+	if req.CharacterImage != "" {
+		image.Valid = true 
+
+		media, err := cs.mediaRepository.FindById(ctx, req.CharacterImage)
+
+		if err != nil && media.Id == "" {
+       		return utility.NewNotFound("Image Character")
+		} 
+	}
+
  	character := domain.Character{
 		Id:uuid.New().String(),
 		Slug: characterSlug,
 		Name: req.Name,       
 		NameNative: req.NameNative,
 		Description:req.Description,
+		CharacterImage:image,
 		CreatedAt: sql.NullTime{Time: time.Now(), Valid: true},
     }
 
@@ -108,10 +143,23 @@ func (cs CharacterService) Update(ctx context.Context, req dto.UpdateCharacterRe
     }
 
 
+	image := sql.NullString{String:req.CharacterImage, Valid:false}
+
+	if req.CharacterImage != "" {
+		image.Valid = true 
+
+		media, err := cs.mediaRepository.FindById(ctx, req.CharacterImage)
+
+		if err != nil && media.Id == "" {
+       		return utility.NewNotFound("Image Character")
+		} 
+	}
+
 	exist.Slug = peopleSlug
 	exist.NameNative=req.NameNative
 	exist.Name= req.Name 
-	exist.Description=req.Description    
+	exist.Description=req.Description
+	exist.CharacterImage=image    
 
 	exist.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
