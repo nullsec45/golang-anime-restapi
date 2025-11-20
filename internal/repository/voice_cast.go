@@ -5,6 +5,7 @@ import (
 	"github.com/nullsec45/golang-anime-restapi/domain"
 	"github.com/doug-martin/goqu/v9"
 	"context"
+	"fmt"
 )
 
 type VoiceCastRepository struct {
@@ -28,8 +29,62 @@ func (vcr *VoiceCastRepository) FindById(ctx context.Context, id string) (result
 	return result, err
 }
 
+func (vcr *VoiceCastRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.VoiceCastWithRelation,  error) {
+	ds := vcr.db.
+		From(goqu.T("voice_casts").As("vc")).
+		LeftJoin(
+			goqu.T("characters").As("c"),
+			goqu.On(goqu.I("vc.character_id").Eq(goqu.I("c.id"))),
+		).LeftJoin(
+			goqu.T("peoples").As("p"),	
+			goqu.On(goqu.I("vc.person_id").Eq(goqu.I("p.id"))),
+		).Select(
+			// vc
+			goqu.I("vc.character_id"),
+			goqu.I("vc.person_id"),
+
+			goqu.I("vc.id"),
+			goqu.I("vc.language"),
+			goqu.I("vc.role_note"),
+
+			// characters
+			// goqu.I("c.id").As("character_id"),
+			goqu.I("c.slug").As("character_slug"),
+			goqu.I("c.name").As("character_name"),
+			goqu.I("c.name_native").As("character_name_native"),
+			goqu.I("c.description"),
+			// contoh tambahan:
+			// goqu.I("c.image_url").As("character_image_url"),
+
+			// people
+			// goqu.I("p.id").As("people_id"),
+			goqu.I("p.slug").As("people_slug"),
+			goqu.I("p.name").As("people_name"),
+			goqu.I("p.name_native").As("people_name_native"),
+			goqu.I("p.birthday"),
+			goqu.I("p.gender"),
+			goqu.I("p.country"),
+			goqu.I("p.site_url"),
+			goqu.I("p.biography"),
+			// contoh tambahan:
+			// goqu.I("p.image_url").As("people_image_url"),
+		).
+		Where(goqu.I("vc.anime_id").Eq(animeId)).
+		Order(goqu.I("c.name").Asc())
+
+
+	var rows []domain.VoiceCastWithRelation
+	err := ds.ScanStructsContext(ctx, &rows)
+
+	sql, args, _ := ds.ToSQL()
+	fmt.Println("VOICE_CAST SQL:", sql)
+	fmt.Println("ARGS:", args)
+	return rows, err
+}
+
 func (vcr *VoiceCastRepository) FindUnique(ctx context.Context, animeId string, characterId string, personId string) (result domain.VoiceCast, found bool, err error) {
-	dataset := vcr.db.From("voice_casts").Where(
+	dataset := vcr.db.From("voice_casts").
+	Where(
 		goqu.C("anime_id").Eq(animeId),
 		goqu.C("character_id").Eq(characterId),
 		goqu.C("person_id").Eq(personId),
