@@ -47,13 +47,13 @@ func episodeValidator() *validator.Validate {
 
 type AnimeEpisodeData struct {
 	Id              string         `json:"id"`
-	AnimeId         string         `json:"anime_id" validate:"required,uuid4"`
-	Number          int            `json:"number" validate:"required,min=1"`
-	SeasonNumber    int            `json:"season_number,omitempty" validate:"omitempty,min=1"`
-	Title           string         `json:"title,omitempty" validate:"omitempty"`
-	Synopsis        string         `json:"synopsis,omitempty" validate:"omitempty"`
-	AirDate         *FlexibleTime  `json:"air_date,omitempty" validate:"omitempty"`
-	DurationMinutes int            `json:"duration_minutes,omitempty" validate:"omitempty,min=1"`
+	AnimeId         string         `json:"anime_id,omitempty"`
+	Number          int            `json:"number"`
+	SeasonNumber    int            `json:"season_number,omitempty"`
+	Title           string         `json:"title,omitempty"`
+	Synopsis        string         `json:"synopsis,omitempty"`
+	AirDate         *FlexibleTime  `json:"air_date,omitempty"`
+	DurationMinutes int            `json:"duration_minutes,omitempty"`
 	IsSpecial       bool           `json:"is_special"`
 	Video           string         `json:"video"`
 }
