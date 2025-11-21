@@ -60,7 +60,7 @@ func (cr *CharacterRepository) FindAll(ctx context.Context, opts domain.Characte
     }
 
 	switch opts.Pagination.Sort {
-		case "name", "created_at", "name_native":
+		case "name", "characters.created_at", "name_native":
 			if strings.ToLower(opts.Pagination.Order) == "asc" {
 				dataset = dataset.Order(goqu.I(opts.Pagination.Sort).Asc())
 			}else{
@@ -91,10 +91,10 @@ func (cr *CharacterRepository) FindAll(ctx context.Context, opts domain.Characte
 
 func (cr *CharacterRepository) FindById(ctx context.Context, id string) (result domain.Character, err error) {
 	dataset := cr.db.From("characters").
-					 LeftJoin(
+					LeftJoin(
 						goqu.T("media").As("m"),
 						goqu.On(goqu.I("characters.character_image").Eq(goqu.I("m.id"))),
-					 ).
+					).
 					Select(
 						goqu.I("characters.id"),
 						goqu.I("characters.slug"),
