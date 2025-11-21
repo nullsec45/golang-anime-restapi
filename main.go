@@ -95,7 +95,7 @@ func main(){
 	mediaService := service.NewMedia(conf, mediaRepository)
 	animeStudioService := service.NewAnimeStudio(animeStudioRepository)
 	animeStudiosService := service.NewAnimeStudios(animeRepository, animeStudioRepository, animeStudiosRepository)
-	peopleService := service.NewPeople(peopleRepository)
+	peopleService := service.NewPeople(peopleRepository,mediaRepository, conf)
 	characterService := service.NewCharacter(characterRepository, mediaRepository,conf)
 	voiceCastService := service.NewVoiceCast(animeRepository, characterRepository, peopleRepository, voiceCastRepository)
 

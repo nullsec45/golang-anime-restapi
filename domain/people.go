@@ -25,6 +25,7 @@ type People struct {
 	Country     string         `db:"country"`
 	SiteURL     string         `db:"site_url"`
 	Biography   string         `db:"biography"`
+	PersonImage sql.NullString `db:"person_image"`
 	CreatedAt   sql.NullTime   `db:"created_at"`
 	UpdatedAt   sql.NullTime   `db:"updated_at"`
 }
@@ -33,6 +34,7 @@ type PeopleRepository interface {
 	FindAll(ctx context.Context, opts PeopleListOptions) ([]People, int64, error)
 	FindById(ctx context.Context, id string) (People, error)
 	FindBySlug(ctx context.Context, slug string) (People, error)
+	FindByName(ctx context.Context, name string) (People, error)
 	Save(ctx context.Context, anime *People) error
 	Update(ctx context.Context, anime *People) error
 	Delete(ctx context.Context, id string) error

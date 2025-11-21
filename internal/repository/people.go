@@ -34,6 +34,10 @@ func (ar *PeopleRepository) FindAll(ctx context.Context, opts domain.PeopleListO
 	uOffset := uint(offset)
 
 	dataset := ar.db.From("peoples").
+					LeftJoin(
+						goqu.T("media").As("m"),
+						goqu.On(goqu.I("peoples.person_image").Eq(goqu.I("m.id"))),
+					).
 					Where(goqu.C("deleted_at").IsNull()).
 					Select(
 						goqu.I("peoples.id"),
@@ -48,6 +52,7 @@ func (ar *PeopleRepository) FindAll(ctx context.Context, opts domain.PeopleListO
 						goqu.I("peoples.created_at"),
 						goqu.I("peoples.updated_at"),
 						goqu.L("COUNT(*) OVER()").As("total_count"),
+						goqu.L("m.path").As("person_image"),
 					)
 	
     if s := opts.Filter.Search; s != "" {
@@ -60,14 +65,14 @@ func (ar *PeopleRepository) FindAll(ctx context.Context, opts domain.PeopleListO
     }
 
 	switch opts.Pagination.Sort {
-		case "birthdary", "created_at":
+		case "birthday", "peoples.created_at":
 			if strings.ToLower(opts.Pagination.Order) == "asc" {
 				dataset = dataset.Order(goqu.I(opts.Pagination.Sort).Asc())
 			}else{
 				dataset = dataset.Order(goqu.I(opts.Pagination.Sort).Desc())
 			}
 		default:
-			dataset = dataset.Order(goqu.I("created_at").Desc())
+			dataset = dataset.Order(goqu.I("peoples.created_at").Desc())
 	}
 
 	dataset = dataset.Limit(uLimit).Offset(uOffset)
@@ -90,10 +95,27 @@ func (ar *PeopleRepository) FindAll(ctx context.Context, opts domain.PeopleListO
 }
 
 func (ar *PeopleRepository) FindById(ctx context.Context, id string) (result domain.People, err error) {
-	dataset := ar.db.From("peoples").Where(
-		goqu.I("peoples.id").Eq(id),															
-		goqu.I("peoples.deleted_at").IsNull(),
-	)
+	dataset := ar.db.From("peoples").
+					LeftJoin(
+						goqu.T("media").As("m"),
+						goqu.On(goqu.I("peoples.person_image").Eq(goqu.I("m.id"))),
+					).Select(
+						goqu.I("peoples.id"),
+						goqu.I("peoples.slug"),
+						goqu.I("peoples.name_native"),
+						goqu.I("peoples.name"),
+						goqu.I("peoples.birthday"),
+						goqu.I("peoples.gender"),
+						goqu.I("peoples.country"),
+						goqu.I("peoples.site_url"),
+						goqu.I("peoples.biography"),
+						goqu.I("peoples.created_at"),
+						goqu.I("peoples.updated_at"),
+						goqu.L("m.path").As("person_image"),
+					).Where(
+						goqu.I("peoples.id").Eq(id),															
+						goqu.I("peoples.deleted_at").IsNull(),
+					)
 
 	found, scanErr := dataset.ScanStructContext(ctx, &result)
 	
@@ -109,10 +131,28 @@ func (ar *PeopleRepository) FindById(ctx context.Context, id string) (result dom
 }
 
 func (ar *PeopleRepository) FindBySlug(ctx context.Context, slug string) (result domain.People, err error) {
-	dataset := ar.db.From("peoples").Where(
-		goqu.I("peoples.slug").Eq(slug),															
-		goqu.I("peoples.deleted_at").IsNull(),
-	)
+	dataset := ar.db.From("peoples").
+					LeftJoin(
+						goqu.T("media").As("m"),
+						goqu.On(goqu.I("peoples.person_image").Eq(goqu.I("m.id"))),
+					).Select(
+						goqu.I("peoples.id"),
+						goqu.I("peoples.slug"),
+						goqu.I("peoples.name_native"),
+						goqu.I("peoples.name"),
+						goqu.I("peoples.birthday"),
+						goqu.I("peoples.gender"),
+						goqu.I("peoples.country"),
+						goqu.I("peoples.site_url"),
+						goqu.I("peoples.biography"),
+						goqu.I("peoples.created_at"),
+						goqu.I("peoples.updated_at"),
+						goqu.L("m.path").As("person_image"),
+					).
+					Where(
+						goqu.I("peoples.slug").Eq(slug),															
+						goqu.I("peoples.deleted_at").IsNull(),
+					)
 
 	found, scanErr := dataset.ScanStructContext(ctx, &result)
 	
@@ -126,6 +166,28 @@ func (ar *PeopleRepository) FindBySlug(ctx context.Context, slug string) (result
 
 	return result, err
 }
+
+
+func (ar *PeopleRepository) FindByName(ctx context.Context, name string) (result domain.People, err error) {
+   dataset := ar.db.From("peoples").
+					Where(
+						goqu.I("peoples.name").Eq(name),															
+						goqu.I("peoples.deleted_at").IsNull(),
+					)
+
+	found, scanErr := dataset.ScanStructContext(ctx, &result)
+	
+	if scanErr != nil {
+		return result, scanErr
+	}
+
+	if !found {
+		return result, sql.ErrNoRows
+	}
+
+	return result, err
+}
+
 
 func (ar *PeopleRepository) Save(ctx context.Context, anm *domain.People) error {
 	executor := ar.db.Insert("peoples").Rows(anm).Executor()

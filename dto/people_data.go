@@ -18,6 +18,7 @@ type PeopleData struct {
 	Country     string        `json:"country"`
 	SiteURL     string        `json:"site_url"`
 	Biography   string        `json:"biography"`
+	PersonImage string        `json:"person_image"`
 }
 
 type CreatePeopleRequest struct {
@@ -28,7 +29,8 @@ type CreatePeopleRequest struct {
 	Gender      GenderType    `json:"gender" validate:"required,oneof=Female Male"`
 	Country     string        `json:"country" validate:"required"`
 	SiteURL     string        `json:"site_url" validate:"omitempty"`
-	Biography   string        `json:"biography" validate:"required"`                         
+	Biography   string        `json:"biography" validate:"required"`          
+	PersonImage string        `json:"person_image"`
 }
 
 type UpdatePeopleRequest struct {
@@ -40,5 +42,6 @@ type UpdatePeopleRequest struct {
 	Gender      GenderType    `json:"gender" validate:"required,oneof=Female Male"`
 	Country     string        `json:"country" validate:"required"`
 	SiteURL     string        `json:"site_url" validate:"omitempty"`
-	Biography   string        `json:"biography" validate:"required"`                   
+	Biography   string        `json:"biography" validate:"required"`   
+	PersonImage string        `json:"person_image"`
 }
