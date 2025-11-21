@@ -136,10 +136,10 @@ func (cs CharacterService) Update(ctx context.Context, req dto.UpdateCharacterRe
         return  err
     }
 
-	peopleSlug := req.Slug
+	characterSlug := req.Slug
 
-    if peopleSlug == "" {
-        peopleSlug = slug.Make(req.Name) 
+    if characterSlug == "" {
+        characterSlug = slug.Make(req.Name) 
     }
 
 
@@ -155,7 +155,7 @@ func (cs CharacterService) Update(ctx context.Context, req dto.UpdateCharacterRe
 		} 
 	}
 
-	exist.Slug = peopleSlug
+	exist.Slug = characterSlug
 	exist.NameNative=req.NameNative
 	exist.Name= req.Name 
 	exist.Description=req.Description
@@ -165,6 +165,7 @@ func (cs CharacterService) Update(ctx context.Context, req dto.UpdateCharacterRe
 
 	return cs.characterRepository.Update(ctx, &exist)
 }
+
 
 func (cs CharacterService) Delete (ctx context.Context, id string) error {
     exist, err := cs.characterRepository.FindById(ctx, id)
