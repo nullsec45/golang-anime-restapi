@@ -1,0 +1,3 @@
+ALTER TABLE peoples
+    ADD COLUMN person_image UUID  NULL REFERENCES media(id) ON DELETE SET NULL ON  UPDATE NO ACTION;
+    
