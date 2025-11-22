@@ -53,30 +53,35 @@ func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) 
 		return dto.Paginated[dto.AnimeData]{}, err
 	}
 
-	coverId := make([]string, 0)
-	for _, v := range items {
-		if v.CoverId.Valid {
-			coverId = append(coverId, v.CoverId.String)
-		}
-	}
+	// coverId := make([]string, 0)
+	// for _, v := range items {
+	// 	if v.CoverId.Valid {
+	// 		coverId = append(coverId, v.CoverId.String)
+	// 	}
+	// }
 
-	covers := make(map[string]string)
+	// covers := make(map[string]string)
 
-	if len(coverId) > 0 {	
-		media, _ := as.mediaRepository.FindByIds(ctx, coverId)
+	// if len(coverId) > 0 {	
+	// 	media, _ := as.mediaRepository.FindByIds(ctx, coverId)
 
-		for _, v := range media {
-			covers[v.Id] = as.config.Server.AssetPrivate+"/"+v.Id
-		}
-	}
+	// 	for _, v := range media {
+	// 		covers[v.Id] = as.config.Server.AssetPrivate+"/"+v.Id
+	// 	}
+	// }
 
 	var animeData []dto.AnimeData
 
 	for _, v:= range items {
-		var coverUrl string
+		// var coverUrl string
 
-		if v2, e := covers[v.CoverId.String]; e {
-			coverUrl = v2
+		// if v2, e := covers[v.CoverId.String]; e {
+		// 	coverUrl = v2
+		// }
+
+		coverUrl := ""
+		if v.CoverId.Valid {
+			coverUrl = as.config.Server.Asset + "/" + v.CoverId.String
 		}
 
 		animeData = append(animeData, dto.AnimeData{
@@ -230,14 +235,19 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 	}
 
 
-	var coverUrl string
+	// var coverUrl string
 
+	// if exist.CoverId.Valid {
+	// 	cover, _ := as.mediaRepository.FindById(ctx, exist.CoverId.String)
+
+	// 	if cover.Path != "" {
+	// 		coverUrl = as.config.Server.AssetPrivate+"/"+cover.Id
+	// 	}
+	// }
+
+	coverUrl := ""
 	if exist.CoverId.Valid {
-		cover, _ := as.mediaRepository.FindById(ctx, exist.CoverId.String)
-
-		if cover.Path != "" {
-			coverUrl = as.config.Server.AssetPrivate+"/"+cover.Id
-		}
+		coverUrl = as.config.Server.Asset + "/" + exist.CoverId.String
 	}
 
     return dto.AnimeShowData{
