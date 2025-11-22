@@ -44,6 +44,10 @@ func (as AnimeEpisodeService) Index(ctx context.Context, animeId string, epts do
 
 	for _, v:= range items {
 
+		video := ""
+		if v.Video.Valid {
+			video = as.config.Server.AssetPrivate + "/" + v.Video.String
+		}
 		episodeData = append(episodeData, dto.AnimeEpisodeData{
 			Id:               v.Id,
 			AnimeId:          v.AnimeId, 
@@ -54,6 +58,7 @@ func (as AnimeEpisodeService) Index(ctx context.Context, animeId string, epts do
 			AirDate:          utility.ToTimePtr(v.AirDate),
 			DurationMinutes:  v.DurationMinutes,
 			IsSpecial:        v.IsSpecial,
+			Video:            video,
 		})
 	}
 
@@ -70,14 +75,19 @@ func (as  AnimeEpisodeService) Show (ctx context.Context, id string) (dto.AnimeE
         return dto.AnimeEpisodeData{}, utility.NewNotFound("Anime Episode")
     }
 
-	var video string
+	// var video string
 
+	// if exist.Video.Valid {
+	// 	media, _ := as.mediaRepository.FindById(ctx, exist.Video.String)
+
+	// 	if media.Path != "" {
+	// 		video = as.config.Server.AssetPrivate+"/"+media.Id
+	// 	}
+	// }
+
+	video := ""
 	if exist.Video.Valid {
-		media, _ := as.mediaRepository.FindById(ctx, exist.Video.String)
-
-		if media.Path != "" {
-			video = as.config.Server.AssetPrivate+"/"+media.Id
-		}
+		video = as.config.Server.AssetPrivate + "/" + exist.Video.String
 	}
 
     return dto.AnimeEpisodeData{
