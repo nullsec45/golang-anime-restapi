@@ -52,7 +52,7 @@ type AnimeRepository interface {
 }
 
 type AnimeService interface {
-	Index(ctx context.Context, opts AnimeListOptions) (dto.Paginated[dto.AnimeData], error)
+	Index(ctx context.Context, opts AnimeListOptions) (dto.Paginated[dto.AnimeListData], error)
 	Show(ctx context.Context, param string) (dto.AnimeShowData, error)
 	Create(ctx context.Context, req dto.CreateAnimeRequest) error
 	Update(ctx context.Context, req dto.UpdateAnimeRequest) error

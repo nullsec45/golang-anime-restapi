@@ -156,10 +156,41 @@ func (ar *AnimeRepository) FindById(ctx context.Context, id string) (result doma
 }
 
 func (ar *AnimeRepository) FindBySlug(ctx context.Context, slug string) (result domain.Anime, err error) {
-	dataset := ar.db.From("animes").Where(
-		goqu.I("animes.slug").Eq(slug),															
-		goqu.I("animes.deleted_at").IsNull(),
-	)
+	dataset := ar.db.Select(
+						goqu.I("animes.id"),
+						goqu.I("animes.slug"),
+						goqu.I("animes.title_romaji"),
+						goqu.I("animes.title_native"),
+						goqu.I("animes.title_english"),
+						goqu.I("animes.synopsis"),
+						goqu.I("animes.type"),
+						goqu.I("animes.season"),
+						goqu.I("animes.season_year"),
+						goqu.I("animes.status"),
+						goqu.I("animes.age_rating"),
+						goqu.I("animes.total_episodes"),
+						goqu.I("animes.average_duration_minutes"),
+						goqu.I("animes.country"),
+						goqu.I("animes.premiered_at"),
+						goqu.I("animes.ended_at"),
+						goqu.I("animes.popularity"),
+						goqu.I("animes.score_avg"),
+						goqu.I("animes.alt_titles"),
+						goqu.I("animes.external_ids"),
+						goqu.I("animes.cover_id"),
+						goqu.I("animes.created_at"),
+						goqu.I("animes.updated_at"),
+						goqu.L("m.path").As("cover_id"),
+					).
+					From("animes").
+					LeftJoin(
+						goqu.T("media").As("m"),
+						goqu.On(goqu.I("animes.cover_id").Eq(goqu.I("m.id"))),
+					).
+					Where(
+						goqu.I("animes.slug").Eq(slug),															
+						goqu.I("animes.deleted_at").IsNull(),
+					)
 
 	found, scanErr := dataset.ScanStructContext(ctx, &result)
 	

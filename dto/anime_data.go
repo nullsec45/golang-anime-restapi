@@ -65,6 +65,11 @@ type AnimeData struct {
 	CoverUrl               string                  `json:"cover_url"`
 }
 
+type AnimeListData struct {
+	AnimeData
+	Genres      []AnimeGenreData	`json:"genres"`
+}
+
 
 type AnimeShowData struct {
 	AnimeData

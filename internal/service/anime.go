@@ -17,7 +17,7 @@ type AnimeService struct {
 	config *config.Config
 	animeRepository domain.AnimeRepository
 	animeEpisodeRepository domain.AnimeEpisodeRepository
-	animeGenreRepository domain.AnimeGenreRepository
+	animeGenresRepository domain.AnimeGenresRepository
 	animeTagRepository domain.AnimeTagRepository
 	mediaRepository domain.MediaRepository
 	animeStudioRepository domain.AnimeStudioRepository
@@ -28,7 +28,7 @@ func NewAnime(
 	config *config.Config,
 	animeRepository domain.AnimeRepository,
 	animeEpisodeRepository domain.AnimeEpisodeRepository,
-	animeGenreRepository domain.AnimeGenreRepository,
+	animeGenresRepository domain.AnimeGenresRepository,
 	animeTagRepository domain.AnimeTagRepository,
 	mediaRepository domain.MediaRepository,
 	animeStudioRepository domain.AnimeStudioRepository,
@@ -38,7 +38,7 @@ func NewAnime(
 		config:config,
 		animeRepository: animeRepository,
 		animeEpisodeRepository:animeEpisodeRepository,
-		animeGenreRepository:animeGenreRepository,
+		animeGenresRepository:animeGenresRepository,
 		animeTagRepository:animeTagRepository,
 		mediaRepository:mediaRepository,
 		animeStudioRepository:animeStudioRepository,
@@ -46,71 +46,92 @@ func NewAnime(
 	}
 }
 
-func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) (dto.Paginated[dto.AnimeData], error) {
+func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) (dto.Paginated[dto.AnimeListData], error) {
 	items, total, err := as.animeRepository.FindAll(ctx, opts)
 
-	if err != nil {
-		return dto.Paginated[dto.AnimeData]{}, err
+	var animeIDs []string
+    for _, v := range items {
+        animeIDs = append(animeIDs, v.Id)
 	}
 
-	// coverId := make([]string, 0)
-	// for _, v := range items {
-	// 	if v.CoverId.Valid {
-	// 		coverId = append(coverId, v.CoverId.String)
-	// 	}
-	// }
+	if err != nil {
+		return dto.Paginated[dto.AnimeListData]{}, err
+	}
 
-	// covers := make(map[string]string)
+	var animeDataList []dto.AnimeListData
 
-	// if len(coverId) > 0 {	
-	// 	media, _ := as.mediaRepository.FindByIds(ctx, coverId)
-
-	// 	for _, v := range media {
-	// 		covers[v.Id] = as.config.Server.AssetPrivate+"/"+v.Id
-	// 	}
-	// }
-
-	var animeData []dto.AnimeData
+	genresMap, err := as.animeGenresRepository.FindByAnimeIDs(ctx, animeIDs)
+	if err != nil { 
+		return dto.Paginated[dto.AnimeListData]{}, err 
+	}
 
 	for _, v:= range items {
-		// var coverUrl string
-
-		// if v2, e := covers[v.CoverId.String]; e {
-		// 	coverUrl = v2
-		// }
-
 		coverUrl := ""
 		if v.CoverId.Valid {
 			coverUrl = as.config.Server.Asset + "/" + v.CoverId.String
 		}
 
-		animeData = append(animeData, dto.AnimeData{
-			Id:                     v.Id,
-			Slug:                   v.Slug,
-			TitleRomaji:            v.TitleRomaji,
-			TitleNative:            utility.ToString(v.TitleNative),         
-			TitleEnglish:           utility.ToString(v.TitleEnglish),        
-			Synopsis:               utility.ToString(v.Synopsis),            	
-			Type:                   dto.AnimeType(v.Type),
-			Season:                 v.Season,
-			SeasonYear:             v.SeasonYear,         
-			Status:                 dto.AnimeStatus(v.Status), 
-			AgeRating:              v.AgeRating,
-			TotalEpisodes:          v.TotalEpisodes,            
-			AverageDurationMinutes: v.AverageDurationMinutes,   
-			Country:                v.Country,
-			PremieredAt:            utility.ToTimePtr(v.PremieredAt),              
-			EndedAt:                utility.ToTimePtr(v.EndedAt),                  
-			Popularity:             v.Popularity,
-			ScoreAvg:               v.ScoreAvg,                 
-			AltTitles:              v.AltTitles,     
-			ExternalIDs:            v.ExternalIDs,     
-			CoverUrl:			    coverUrl,  
-		})
+		genresDomain := genresMap[v.Id]
+			genresData := make([]dto.AnimeGenreData, 0, len(genresDomain))
+			for _, g := range genresDomain {
+				genresData = append(genresData, dto.AnimeGenreData{Id: g.Id, Slug: g.Slug, Name: g.Name})
+			}
+
+		// animeData = append(animeData, dto.AnimeData{
+		// 	Id:                     v.Id,
+		// 	Slug:                   v.Slug,
+		// 	TitleRomaji:            v.TitleRomaji,
+		// 	TitleNative:            utility.ToString(v.TitleNative),         
+		// 	TitleEnglish:           utility.ToString(v.TitleEnglish),        
+		// 	Synopsis:               utility.ToString(v.Synopsis),            	
+		// 	Type:                   dto.AnimeType(v.Type),
+		// 	Season:                 v.Season,
+		// 	SeasonYear:             v.SeasonYear,         
+		// 	Status:                 dto.AnimeStatus(v.Status), 
+		// 	AgeRating:              v.AgeRating,
+		// 	TotalEpisodes:          v.TotalEpisodes,            
+		// 	AverageDurationMinutes: v.AverageDurationMinutes,   
+		// 	Country:                v.Country,
+		// 	PremieredAt:            utility.ToTimePtr(v.PremieredAt),              
+		// 	EndedAt:                utility.ToTimePtr(v.EndedAt),                  
+		// 	Popularity:             v.Popularity,
+		// 	ScoreAvg:               v.ScoreAvg,                 
+		// 	AltTitles:              v.AltTitles,     
+		// 	ExternalIDs:            v.ExternalIDs,     
+		// 	CoverUrl:			    coverUrl,  
+		// })
+		listItem := dto.AnimeListData{
+			AnimeData:dto.AnimeData{
+				Id:                     v.Id,
+				Slug:                   v.Slug,
+				TitleRomaji:            v.TitleRomaji,
+				TitleNative:            utility.ToString(v.TitleNative),         
+				TitleEnglish:           utility.ToString(v.TitleEnglish),        
+				Synopsis:               utility.ToString(v.Synopsis),            	
+				Type:                   dto.AnimeType(v.Type),
+				Season:                 v.Season,
+				SeasonYear:             v.SeasonYear,         
+				Status:                 dto.AnimeStatus(v.Status), 
+				AgeRating:              v.AgeRating,
+				TotalEpisodes:          v.TotalEpisodes,            
+				AverageDurationMinutes: v.AverageDurationMinutes,   
+				Country:                v.Country,
+				PremieredAt:            utility.ToTimePtr(v.PremieredAt),              
+				EndedAt:                utility.ToTimePtr(v.EndedAt),                  
+				Popularity:             v.Popularity,
+				ScoreAvg:               v.ScoreAvg,                 
+				AltTitles:              v.AltTitles,     
+				ExternalIDs:            v.ExternalIDs,     
+				CoverUrl:			    coverUrl,  
+			},
+			Genres:genresData,
+		}
+
+		animeDataList = append(animeDataList, listItem)
 	}
 
-	return dto.Paginated[dto.AnimeData]{
-		Data: animeData,
+	return dto.Paginated[dto.AnimeListData]{
+		Data: animeDataList,
 		Meta:opts.Pagination.BuildMeta(total),
 	}, nil
 }
@@ -153,7 +174,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		})
 	}
 
-	genres, err := as.animeGenreRepository.FindByAnimeId(ctx, exist.Id)
+	genres, err := as.animeGenresRepository.FindByAnimeId(ctx, exist.Id)
 	if err != nil { 
 		return dto.AnimeShowData{}, err 
 	}
@@ -208,7 +229,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		voiceCastData = append(voiceCastData, dto.VoiceCastShowData{
 			VoiceCastData: dto.VoiceCastData{
 				Id:          vc.Id,
-				Language:    utility.ToStringPtr(vc.Language),  // atau utility.ToString(*vc.Language)
+				Language:    utility.ToStringPtr(vc.Language), 
 				RoleNote:    utility.ToStringPtr(vc.Language),
 			},
 			Character: dto.CharacterData{
@@ -217,7 +238,6 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 				Name: vc.CharacterName,
 				NameNative:vc.CharacterNameNative,
 				Description:vc.CharacterDescription,
-				// isi field lain kalau CharacterData kamu punya field tambahan
 			},
 			People: dto.PeopleData{
 				Id:   vc.PersonId,
@@ -229,22 +249,9 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 				Country:vc.PeopleCountry,
 				SiteURL:vc.PeopleSiteURL,
 				Biography:vc.PeopleBiography,
-				// isi field lain kalau PeopleData kamu punya field tambahan
 			},
 		})
 	}
-
-
-	// var coverUrl string
-
-	// if exist.CoverId.Valid {
-	// 	cover, _ := as.mediaRepository.FindById(ctx, exist.CoverId.String)
-
-	// 	if cover.Path != "" {
-	// 		coverUrl = as.config.Server.AssetPrivate+"/"+cover.Id
-	// 	}
-	// }
-
 	coverUrl := ""
 	if exist.CoverId.Valid {
 		coverUrl = as.config.Server.Asset + "/" + exist.CoverId.String
