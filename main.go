@@ -82,7 +82,7 @@ func main(){
 	animeService := service.NewAnime(conf, 
 		                             animeRepository, 
 									 animeEpisodeRepository, 
-									 animeGenreRepository, 
+									 animeGenresRepository, 
 									 animeTagRepository, 
 									 mediaRepository, 
 									 animeStudioRepository,
