@@ -27,6 +27,65 @@ func (agrs *AnimeGenresRepository) FindById(ctx context.Context, id string) (res
 	}
 	return result, err
 }
+func (agrs *AnimeGenresRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.AnimeGenre, error) {
+	ds := agrs.db.
+		From(goqu.T("anime_genres")).
+		InnerJoin(
+			goqu.T("anime"),
+			goqu.On(goqu.I("anime_genres.anime_id").Eq(goqu.I("animes.id"))),
+		).
+		Select(goqu.I("genres.id"), goqu.I("genres.slug"), goqu.I("genres.name")). 
+		Where(goqu.I("anime_genres.anime_id").Eq(animeId)).
+		Order(goqu.I("genres.name").Asc())
+	var rows []domain.AnimeGenre
+	err := ds.ScanStructsContext(ctx, &rows)
+	return rows, err
+}
+
+func(agrs *AnimeGenresRepository) FindByAnimeIDs(ctx context.Context, animeIDs []string)(map[string][]domain.AnimeGenre, error){
+	if len(animeIDs) == 0 { 
+		return nil, nil
+	}
+
+	subquery := goqu.From("anime_genres").
+        Select(
+            goqu.I("anime_genres.anime_id"),
+            goqu.I("anime_genres.genre_id"),
+            goqu.L("ROW_NUMBER() OVER (PARTITION BY anime_genres.anime_id ORDER BY anime_genres.created_at DESC)").As("rn"),
+        ).Where(goqu.I("anime_genres.anime_id").In(animeIDs))
+
+	dataset := agrs.db.From(subquery.As("sq")).
+        Select(
+            goqu.I("sq.anime_id"),
+            goqu.I("g.id").As("id"),
+            goqu.I("g.slug").As("slug"),
+            goqu.I("g.name").As("name"),
+        ).
+        LeftJoin(
+            goqu.T("genres").As("g"),
+            goqu.On(goqu.I("sq.genre_id").Eq(goqu.I("g.id"))),
+        ).
+        Where(goqu.I("sq.rn").Lte(3)).
+        Order(goqu.I("sq.anime_id").Asc(), goqu.I("sq.rn").Asc())
+
+	type GenreRow struct {
+		AnimeID string `db:"anime_id"`
+		domain.AnimeGenre
+	}
+
+	var rows []GenreRow
+	if err := dataset.ScanStructsContext(ctx, &rows); err != nil {
+		return nil, err
+	}
+
+	genresMap := make(map[string][]domain.AnimeGenre)
+	for _, row := range rows {
+		genresMap[row.AnimeID] = append(genresMap[row.AnimeID], row.AnimeGenre)
+	}
+
+	return genresMap, nil
+}
+
 
 func (agrs *AnimeGenresRepository) FindByAnimeAndGenreId(ctx context.Context, animeId string, genreId string) (result domain.AnimeGenres, found bool, err error) {
 	dataset := agrs.db.From("anime_genres").Where(
