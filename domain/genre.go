@@ -18,7 +18,6 @@ type AnimeGenreRepository interface {
 	FindAll(ctx context.Context) ([]AnimeGenre, error)
 	FindById(ctx context.Context, id string) (AnimeGenre, error)
 	FindBySlug(ctx context.Context, id string) (AnimeGenre, error)
-	FindByAnimeId(ctx context.Context, animeId string)([]AnimeGenre, error)
 	Save(ctx context.Context, genre *AnimeGenre) error
 	Update(ctx context.Context, genre *AnimeGenre) error
 	Delete(ctx context.Context, id string) error

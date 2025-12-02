@@ -55,21 +55,6 @@ func (agr *AnimeGenreRepository) FindBySlug(ctx context.Context, slug string) (r
 	return result, err
 }
 
-func (agr *AnimeGenreRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.AnimeGenre, error) {
-	ds := agr.db.
-		From(goqu.T("genres")).
-		InnerJoin(
-			goqu.T("anime_genres"),
-			goqu.On(goqu.I("genres.id").Eq(goqu.I("anime_genres.genre_id"))),
-		).
-		Select(goqu.I("genres.id"), goqu.I("genres.slug"), goqu.I("genres.name")). 
-		Where(goqu.I("anime_genres.anime_id").Eq(animeId)).
-		Order(goqu.I("genres.name").Asc())
-	var rows []domain.AnimeGenre
-	err := ds.ScanStructsContext(ctx, &rows)
-	return rows, err
-}
-
 func (agr *AnimeGenreRepository) Save(ctx context.Context, anm *domain.AnimeGenre) error {
 	executor := agr.db.Insert("genres").Rows(anm).Executor()
 	_, err := executor.ExecContext(ctx)
