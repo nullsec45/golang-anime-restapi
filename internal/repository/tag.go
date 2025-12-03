@@ -55,21 +55,6 @@ func (atr *AnimeTagRepository) FindBySlug(ctx context.Context, slug string) (res
 	return result, err
 }
 
-func (atr *AnimeTagRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.AnimeTag, error) {
-	ds := atr.db.
-		From(goqu.T("tags")).
-		InnerJoin(
-			goqu.T("anime_tags"),
-			goqu.On(goqu.I("tags.id").Eq(goqu.I("anime_tags.tag_id"))),
-		).
-		Select(goqu.I("tags.id"), goqu.I("tags.slug"), goqu.I("tags.name")). 
-		Where(goqu.I("anime_tags.anime_id").Eq(animeId)).
-		Order(goqu.I("tags.name").Asc())
-	var rows []domain.AnimeTag
-	err := ds.ScanStructsContext(ctx, &rows)
-	return rows, err
-}
-
 func (atr *AnimeTagRepository) Save(ctx context.Context, anm *domain.AnimeTag) error {
 	executor := atr.db.Insert("tags").Rows(anm).Executor()
 	_, err := executor.ExecContext(ctx)
