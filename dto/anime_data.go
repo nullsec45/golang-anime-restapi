@@ -68,6 +68,7 @@ type AnimeData struct {
 type AnimeListData struct {
 	AnimeData
 	Genres      []AnimeGenreData	`json:"genres"`
+	Tags        []AnimeTagData      `json:"tags"`
 }
 
 
