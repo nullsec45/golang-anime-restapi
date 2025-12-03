@@ -28,6 +28,65 @@ func (atgs *AnimeTagsRepository) FindById(ctx context.Context, id string) (resul
 	return result, err
 }
 
+func (atgs *AnimeTagsRepository) FindByAnimeId(ctx context.Context, animeId string) ([]domain.AnimeTag, error) {
+	ds := atgs.db.
+		From(goqu.T("anime_tags")).
+		InnerJoin(
+			goqu.T("tags"),
+			goqu.On(goqu.I("anime_tags.tag_id").Eq(goqu.I("tags.id"))),
+		).
+		Select(goqu.I("tags.id"), goqu.I("tags.slug"), goqu.I("tags.name")). 
+		Where(goqu.I("anime_tags.anime_id").Eq(animeId)).
+		Order(goqu.I("tags.name").Asc())
+	var rows []domain.AnimeTag
+	err := ds.ScanStructsContext(ctx, &rows)
+	return rows, err
+}
+
+func(atgs *AnimeTagsRepository) FindByAnimeIDs(ctx context.Context, animeIDs []string)(map[string][]domain.AnimeTag, error){
+	if len(animeIDs) == 0 { 
+		return nil, nil
+	}
+
+	subquery := goqu.From("anime_tags").
+        Select(
+            goqu.I("anime_tags.anime_id"),
+            goqu.I("anime_tags.tag_id"),
+            goqu.L("ROW_NUMBER() OVER (PARTITION BY anime_tags.anime_id ORDER BY anime_tags.created_at DESC)").As("rn"),
+        ).Where(goqu.I("anime_tags.anime_id").In(animeIDs))
+
+	dataset := atgs.db.From(subquery.As("sq")).
+        Select(
+            goqu.I("sq.anime_id"),
+            goqu.I("g.id").As("id"),
+            goqu.I("g.slug").As("slug"),
+            goqu.I("g.name").As("name"),
+        ).
+        LeftJoin(
+            goqu.T("genres").As("g"),
+            goqu.On(goqu.I("sq.tag_id").Eq(goqu.I("g.id"))),
+        ).
+        Where(goqu.I("sq.rn").Lte(3)).
+        Order(goqu.I("sq.anime_id").Asc(), goqu.I("sq.rn").Asc())
+
+	type GenreRow struct {
+		AnimeID string `db:"anime_id"`
+		domain.AnimeTag
+	}
+
+	var rows []GenreRow
+	if err := dataset.ScanStructsContext(ctx, &rows); err != nil {
+		return nil, err
+	}
+
+	genresMap := make(map[string][]domain.AnimeTag)
+	for _, row := range rows {
+		genresMap[row.AnimeID] = append(genresMap[row.AnimeID], row.AnimeTag)
+	}
+
+	return genresMap, nil
+}
+
 func (atgs *AnimeTagsRepository) FindByAnimeAndTagId(ctx context.Context, animeId string, tagId string) (result domain.AnimeTags, found bool, err error) {
 	dataset := atgs.db.From("anime_tags").Where(
 		goqu.C("anime_id").Eq(animeId),

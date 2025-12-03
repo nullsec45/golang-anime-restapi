@@ -16,6 +16,8 @@ type AnimeTags struct {
 
 type AnimeTagsRepository interface {
 	FindById(ctx context.Context,  id string) (AnimeTags, error)
+	FindByAnimeId(ctx context.Context, animeId string)([]AnimeTag, error)
+	FindByAnimeIDs(ctx context.Context, animeIDs []string)(map[string][]AnimeTag, error)
 	FindByAnimeAndTagId(ctx context.Context,  animeId string, tagId string) (AnimeTags,  bool, error)
 	Save(ctx context.Context, data *AnimeTags) error
 	Update(ctx context.Context, data *AnimeTags) error
