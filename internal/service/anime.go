@@ -18,7 +18,7 @@ type AnimeService struct {
 	animeRepository domain.AnimeRepository
 	animeEpisodeRepository domain.AnimeEpisodeRepository
 	animeGenresRepository domain.AnimeGenresRepository
-	animeTagRepository domain.AnimeTagRepository
+	animeTagsRepository domain.AnimeTagsRepository
 	mediaRepository domain.MediaRepository
 	animeStudioRepository domain.AnimeStudioRepository
 	voiceCastRepository domain.VoiceCastRepository
@@ -29,7 +29,7 @@ func NewAnime(
 	animeRepository domain.AnimeRepository,
 	animeEpisodeRepository domain.AnimeEpisodeRepository,
 	animeGenresRepository domain.AnimeGenresRepository,
-	animeTagRepository domain.AnimeTagRepository,
+	animeTagsRepository domain.AnimeTagsRepository,
 	mediaRepository domain.MediaRepository,
 	animeStudioRepository domain.AnimeStudioRepository,
 	voiceCastRepository domain.VoiceCastRepository,
@@ -39,7 +39,7 @@ func NewAnime(
 		animeRepository: animeRepository,
 		animeEpisodeRepository:animeEpisodeRepository,
 		animeGenresRepository:animeGenresRepository,
-		animeTagRepository:animeTagRepository,
+		animeTagsRepository:animeTagsRepository,
 		mediaRepository:mediaRepository,
 		animeStudioRepository:animeStudioRepository,
 		voiceCastRepository:voiceCastRepository,
@@ -61,6 +61,8 @@ func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) 
 	var animeDataList []dto.AnimeListData
 
 	genresMap, err := as.animeGenresRepository.FindByAnimeIDs(ctx, animeIDs)
+	tagsMap, err := as.animeTagsRepository.FindByAnimeIDs(ctx, animeIDs)
+
 	if err != nil { 
 		return dto.Paginated[dto.AnimeListData]{}, err 
 	}
@@ -72,34 +74,15 @@ func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) 
 		}
 
 		genresDomain := genresMap[v.Id]
-			genresData := make([]dto.AnimeGenreData, 0, len(genresDomain))
-			for _, g := range genresDomain {
-				genresData = append(genresData, dto.AnimeGenreData{Id: g.Id, Slug: g.Slug, Name: g.Name})
-			}
+		genresData := make([]dto.AnimeGenreData, 0, len(genresDomain))
+		for _, g := range genresDomain {
+			genresData = append(genresData, dto.AnimeGenreData{Id: g.Id, Slug: g.Slug, Name: g.Name})
+		}
 
-		// animeData = append(animeData, dto.AnimeData{
-		// 	Id:                     v.Id,
-		// 	Slug:                   v.Slug,
-		// 	TitleRomaji:            v.TitleRomaji,
-		// 	TitleNative:            utility.ToString(v.TitleNative),         
-		// 	TitleEnglish:           utility.ToString(v.TitleEnglish),        
-		// 	Synopsis:               utility.ToString(v.Synopsis),            	
-		// 	Type:                   dto.AnimeType(v.Type),
-		// 	Season:                 v.Season,
-		// 	SeasonYear:             v.SeasonYear,         
-		// 	Status:                 dto.AnimeStatus(v.Status), 
-		// 	AgeRating:              v.AgeRating,
-		// 	TotalEpisodes:          v.TotalEpisodes,            
-		// 	AverageDurationMinutes: v.AverageDurationMinutes,   
-		// 	Country:                v.Country,
-		// 	PremieredAt:            utility.ToTimePtr(v.PremieredAt),              
-		// 	EndedAt:                utility.ToTimePtr(v.EndedAt),                  
-		// 	Popularity:             v.Popularity,
-		// 	ScoreAvg:               v.ScoreAvg,                 
-		// 	AltTitles:              v.AltTitles,     
-		// 	ExternalIDs:            v.ExternalIDs,     
-		// 	CoverUrl:			    coverUrl,  
-		// })
+		tagsDomain := tagsMap[v.Id]
+		tagsData := make([]dto.AnimeTagData, 0, len(tagsDomain))
+	
+
 		listItem := dto.AnimeListData{
 			AnimeData:dto.AnimeData{
 				Id:                     v.Id,
@@ -125,6 +108,7 @@ func (as AnimeService) Index(ctx context.Context, opts domain.AnimeListOptions) 
 				CoverUrl:			    coverUrl,  
 			},
 			Genres:genresData,
+			Tags:tagsData,
 		}
 
 		animeDataList = append(animeDataList, listItem)
@@ -163,7 +147,6 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 	for _, v := range episodes {
 		episodesData = append(episodesData, dto.AnimeEpisodeData{
 			Id:              v.Id,
-			// AnimeId:         v.AnimeId,
 			Number:          v.Number,
 			SeasonNumber:    v.SeasonNumber,
 			Title:           v.Title,
@@ -188,7 +171,7 @@ func (as AnimeService) Show (ctx context.Context, param string) (dto.AnimeShowDa
 		})
 	} 
 
-	tags, err := as.animeTagRepository.FindByAnimeId(ctx, exist.Id)
+	tags, err := as.animeTagsRepository.FindByAnimeId(ctx, exist.Id)
 	if err != nil { 
 		return dto.AnimeShowData{}, err 
 	}

@@ -83,7 +83,7 @@ func main(){
 		                             animeRepository, 
 									 animeEpisodeRepository, 
 									 animeGenresRepository, 
-									 animeTagRepository, 
+									 animeTagsRepository, 
 									 mediaRepository, 
 									 animeStudioRepository,
 									 voiceCastRepository)
